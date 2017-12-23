@@ -166,7 +166,7 @@
 		</div>
 	</div><!-- /header -->
 
-	<div role="main" class="ui-content">
+	<div role="main" class="ui-content container-fluid">
 
             <div class="row">
                 <div id="col1" class="" style="padding:0 0 0 0;">
@@ -212,7 +212,7 @@
 						style="display:none;">
 				     </form>
 				     </div>
-					<div class="container" style="margin:20 0 0 0">
+					<div class="container-fluid" style="margin:20 0 0 0">
 					  <div class="row">
 					    <div class="col" id="eltos_cpu_a" style="padding:0 5 0 5">
 						    <object id="svg_p" 
@@ -320,18 +320,19 @@
                     </div>
 
 
-		    <fieldset class="ui-grid-c">
-			<div class="ui-block-a" style="width:15%">
+		    <div class="container-fluid">
+		    <div class="row">
+			<div class="col" style="width:15%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
 		                  onclick="wepsim_dialog_current_state();"><c><span class="hidden-xs">State</span><span class="visible-xs">St.</span></c></button>
 			</div>
-			<div class="ui-block-d" style="width:27%">
+			<div class="col" style="width:27%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
                                   data-toggle="modal" data-target="#confighw"><c><span class="hidden-xs">Configuration</span><span class="visible-xs">Cfg.</span></c></button>
 			</div>
-			<div class="ui-block-c" style="width:40%; margin: 7 0 0 0">
+			<div class="col" style="width:40%; padding:0 3 0 3; margin: 7 0 0 0">
                           <select name="select5a" id="select5a" class="custom-select"
 				  data-role="none"
                                   onchange="var val = this.value;
@@ -353,7 +354,7 @@
 				  </optgroup>
 			  </select>
 			</div>
-			<div class="ui-block-b" style="width:18%">
+			<div class="col" style="width:18%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-refresh"
 		                  style="border-width:1 0 1 2px;"
                                   onclick="var val = $('#select5a').val();
@@ -362,7 +363,8 @@
 					        show_rf_values();
 				           else show_memories_values();"><c>Refresh</c></button>
 			</div>
-    		    </fieldset>
+    		    </div>
+    		    </div>
 
 		    <div data-role="tabs" id="tabs1">
 

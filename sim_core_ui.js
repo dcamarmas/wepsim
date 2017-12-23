@@ -1548,7 +1548,7 @@
                      a2s[laddr] = l;
                 }
 
-                o += "<center><table data-role=table class='table ui-responsive'><tbody>" ;
+                o += "<center><table data-role=table class='table ui-responsive table-sm'><tbody>" ;
                 for (l in asm)
                 {
                      if  (bgc == "#F0F0F0")
@@ -1562,11 +1562,11 @@
                      s2_instr = asm[l].source_original ;
 
                      // labels
-                     s_label = "&nbsp;" ;
+                     s_label = "" ;
                      if (typeof a2l[l] != "undefined") {
                          for (var i=0; i<a2l[l].length; i++) {
                               s_label = s_label + 
-                                        "<span class='badge badge-pill badge-primary'>" + 
+                                        "<span class='badge badge-primary'>" + 
                                         a2l[l][i] + 
                                         "</span>" ;
                          }
