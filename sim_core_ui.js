@@ -251,6 +251,33 @@
          *  init_x & show_x
          */
 
+        function simcoreui_notify_close ( )
+        {
+            //$("#alerts-container").close() ;
+              $(".alert").alert('close') ;
+        }
+
+        function simcoreui_notify ( ntf_title, ntf_message, ntf_type, ntf_delay )
+        {
+	    // alerts-container does not exist, create it
+	    var ac = $("#alerts-container") ;
+	    if (ac.length == 0) {
+		ac = $('<div id="alerts-container" ' + 
+                       '     style="position: fixed; width: 50%; left: 25%; top: 10%;">') ;
+		$("body").append(ac) ;
+	    }
+
+	    // create the alert div
+            var btn1   = $('<button type="button" class="close" data-dismiss="alert">') ;
+	    var alert1 = $('<div class="alert alert-' + ntf_type + ' fade in">') ;
+	    ac.prepend(alert1.append(btn1.append("&times;")).append(ntf_message)) ;
+
+	    // if delay was passed, set up a timeout to close the alert
+	    if (ntf_delay != 0) {
+		window.setTimeout(function() { alert1.alert("close") }, ntf_delay);     
+	    }
+        }
+
         function hex2float ( hexvalue )
         {
 		var sign     = (hexvalue & 0x80000000) ? -1 : 1;
@@ -351,11 +378,11 @@
 		var valuedt = "" ;
 		if (get_cfg('is_editable') == true) {
 		    valuedt = "<tr><td colspan=5 align=center><input type=text id='popover1' value='" + valueui + "' data-mini='true' style='width:65%'>&nbsp;" +
-                              "<span class='badge' " +
+                              "<span class='badge badge-secondary' " +
                               "      onclick='hex2values_update(\"" + index + "\");'>update</span></td></tr>";
                 }
 
-		var vtable = "<table width='100%' class='table table-bordered table-condensed'>" +
+		var vtable = "<table width='100%' class='table table-bordered table-sm'>" +
 			     "<tr><td><small><b>hex.</b></small></td>" +
                              "    <td colspan=4><small>" + valuehex + "</small></td></tr>" +
 			     "<tr><td><small><b>bin.</b></small></td>" +
@@ -384,25 +411,23 @@
                 return ;
             }
 
-            var o1_rf = "<div class='hidden' id='popover_rf'>" +
-                        "  <div class='popover-heading'></div>" +
-                        "  <div class='popover-body'></div>" +
-                        "</div>" ;
+            var o1_rf = "" ;
 	    for (var index=0; index < sim_states['BR'].length; index++)
             {
-		 o1_rf += "<div class='col-xs-6 col-sm-4 col-md-4 col-lg-3' style='padding:0 5 0 5;'>" +
-                          "<button type='button' class='btn btn-outline-primary no-text-shadow' style='padding:0 0 0 0; outline:none; box-shadow:none; transform:translate3d(0,0,0);' " +
+		 o1_rf += "<div class='col' style='padding:0 2px 0 2px !important; margin:1px 5px 1px 2px;'>" +
+                          "<button type='button' class='btn btn-outline-primary no-text-shadow' " + 
+			  "        style='margin:1px 5px 1px 2px; padding:0 0 0 0; outline:none; box-shadow:none; transform:translate3d(0,0,0);' " +
                           "        data-toggle='popover-up' data-popover-content='" + index + "' data-container='body' " +
                           "        id='rf" + index + "'>" +
                           "  <span id='name_RF" + index + "' style='float:center; padding:0 0 0 0'>R" + index + "</span>" +
-                          "  <span class='badge' style='background-color:#CEECF5; color:black;' id='tbl_RF"  + index + "'>" +
+                          "  <span class='badge badge-secondary' style='background-color:#CEECF5; color:black;' id='tbl_RF"  + index + "'>" +
                           (get_value(sim_states['BR'][index]) >>> 0).toString(get_cfg('RF_display_format')).toUpperCase() +
                           "  </span>" +
                           "</button>" +
                           "</div>" ;
 	    }
 
-            $(jqdiv).html("<div class='row-fluid'>" + o1_rf + "</div>");
+            $(jqdiv).html("<div class='row'>" + o1_rf + "</div>");
 
 	    $("[data-toggle=popover-up]").popover({
 	    	    html:      true,
@@ -493,19 +518,20 @@
                 var b = filter[i].split(",")[1] ;
                 var divclass = divclasses[b] ;
 
-                o1 += "<div class='" + divclass + "' style='padding: 0 5 0 5;'>" +
-                      "<button type='button' class='btn btn-outline-primary no-text-shadow' style='padding:0 0 0 0; outline:none; box-shadow:none; will-change:transform; transform:translate3d(0,0,0);' " +
+                o1 += "<div class='" + divclass + "' style='padding: 0 5 0 5; margin:1px 5px 1px 2px; '>" +
+                      "<button type='button' class='btn btn-outline-primary no-text-shadow' " + 
+		      "        style='padding:0 0 0 0; margin:1px 5px 1px 2px; outline:none; box-shadow:none; will-change:transform; transform:translate3d(0,0,0);' " +
                       "        data-toggle='popover-bottom' data-popover-content='" + s + "' data-container='body' " +
                       "        id='rp" + s + "'>" +
                       showkey +
-                      "<span class='badge' style='background-color:#CEECF5; color:black;' id='tbl_"  + s + "'>" +
+                      "<span class='badge badge-secondary' style='background-color:#CEECF5; color:black;' id='tbl_"  + s + "'>" +
                       sim_eltos[s].value.toString(get_cfg('RF_display_format')) +
                       "</span>" +
                       "</button>" +
                       "</div>" ;
             }
 
-            $(jqdiv).html("<div class='row-fluid'>" + o1 + "</div>");
+            $(jqdiv).html("<div class='row'>" + o1 + "</div>");
 
 	    $("[data-toggle=popover-bottom]").popover({
 	    	    html:      true,
@@ -565,8 +591,8 @@
                               "REG_RT1,1", "REG_RT2,1", "REG_RT3,1",
                               "REG_MAR,1", "REG_MBR,1", "REG_MICROADDR,1" ] ;
 
-        var divclasses = [ "col-xs-12 col-sm-12 col-md-12 col-lg-12",
-                           "col-xs-4 col-sm-4 col-md-4 col-lg-4" ] ;
+        var divclasses = [ "col-12",
+                           "col" ] ;
 
         function init_states ( jqdiv )
         {
@@ -596,7 +622,7 @@
 
             // stats holder
             var o1 = "<center>" +
-                     "<table class='table table-hover table-condensed table-bordered table-responsive'>" ;
+                     "<table class='table table-hover table-sm table-bordered table-responsive'>" ;
             for (var i=0; i<IO_INT_FACTORY.length; i++)
             {
                o1 += "<tr id='int" + i + "_context'>" +
@@ -610,7 +636,7 @@
             }
             o1 += "</table>" +
                   "</center>" ;
-            $(jqdiv).html("<div class='row-fluid'>" + o1 + "</div>");
+            $(jqdiv).html("<div class='row'>" + o1 + "</div>");
 
             // knockout binding
             for (var i=0; i<IO_INT_FACTORY.length; i++)
@@ -633,7 +659,7 @@
 
             // stats holder
             var o1 = "<center>" +
-                     "<table class='table table-hover table-condensed table-bordered table-responsive'>" +
+                     "<table class='table table-hover table-sm table-bordered table-responsive'>" +
                      "<tr>" +
                      "<td align=center width=50%>Instructions</td>" +
                      "<td align=center width=50%>" +
@@ -648,7 +674,7 @@
                      "</tr>" +
                      "</table>" +
                      "</center>" ;
-            $(jqdiv).html("<div class='row-fluid'>" + o1 + "</div>");
+            $(jqdiv).html("<div class='row'>" + o1 + "</div>");
 
             // knockout binding
             sim_states['CLK'].value = ko.observable(sim_states['CLK'].value);
@@ -675,16 +701,16 @@
             }
 
             // html holder
-            var o1 = "<div class='container-fluid' style='padding:0 0 0 0; overflow-x:auto'>" +
-                     "<div class='row-fluid'>" ;
+            var o1 = "<div class='container-fluid'>" +
+                     "<div class='row'>" ;
 
-               o1 += "<div class='col-xs-12 col-md-12' style='padding:0 0 0 0;'>" +
-                     "<div class='panel panel-default'>" +
-                     "<div class='panel-heading'>" +
-                     " <h3 class='panel-title'>Memory</h3>" +
+               o1 += "<div class='col-12' style='padding:0 0 10 0;'>" +
+                     "<div class='card card-default'>" +
+                     "<div class='card-heading'>" +
+                     " <h3 class='card-title'>Memory</h3>" +
                      "</div>" +
-                     "<div class='panel-body' id='mempanel' style='padding:0 0 0 0;'>" +
-                     "<table class='table table-hover table-condensed table-bordered table-responsive' " +
+                     "<div class='card-body' id='mempanel' style='padding:0 0 0 0;'>" +
+                     "<table class='table table-hover table-sm table-bordered table-responsive' " +
                      "       style='margin:0'>" +
                      "<tbody class='no-ui-mini'>" +
                      "<tr><td align=center'>Wait cycles (<b>0</b> - &infin;)</td>" +
@@ -699,14 +725,14 @@
                      "</div>" +
                      "</div>" ;
          
-               o1 += "<div class='col-xs-12 col-md-12' style='padding:0 0 0 0;'>" +
-                     "<div class='panel panel-default' style='margin:0 0 0 0;'>" +
-                     "<div class='panel-heading'>" +
-                     " <h3 class='panel-title'>I/O</h3>" +
+               o1 += "<div class='col-12' style='padding:0 0 0 0;'>" +
+                     "<div class='card card-default' style='margin:0 0 0 0;'>" +
+                     "<div class='card-heading'>" +
+                     " <h3 class='card-title'>I/O</h3>" +
                      "</div>" +
-                     "<div class='panel-body' id='iopanel' style='padding: 0 0 0 0'>" ;
+                     "<div class='card-body' id='iopanel' style='padding: 0 0 0 0'>" ;
                o1 += "<center>" +
-                     "<table class='table table-hover table-condensed table-bordered table-responsive' " +
+                     "<table class='table table-hover table-sm table-bordered table-responsive' " +
                      "       style='margin:0'>" +
                      "<tbody class='no-ui-mini'>" +
                      "<tr>" +
@@ -889,7 +915,7 @@
 
                      if (typeof labeli != "undefined")
                           value2 += '<span style="border:1px solid gray;">' + valuei + '</span>' +
-                                    '<span class="label label-primary" style="position:relative;top:12px;right:8px;">' + labeli + '</span>' ;
+                                    '<span class="badge badge-pill badge-primary float-right" style="position:relative;top:-2px;">' + labeli + '</span>' ;
                      else value2 += valuei + ' ' ;
                 }
 
@@ -977,8 +1003,8 @@
 
                 maddr = "0x" + parseInt(key).toString(16) ;
                 if (typeof revlabels[key] != "undefined")
-                    maddr = '<span class="label label-primary" ' + 
-                            '      style="position:relative;top:-10px;right:0px;">' + revlabels[key] + '</span>' +
+                    maddr = '<span class="badge badge-pill badge-primary float-left" ' + 
+                            '      style="position:relative;top:2px;">' + revlabels[key] + '</span>' +
                             '<span style="border:1px solid gray;">' + maddr + '</span>' ;
 
 		trpin = "&nbsp;" ;
@@ -1010,7 +1036,7 @@
 		      "<td><font style='color:blue; font-size:small; font-weight:bold'><b>&nbsp;</b></font></td></tr>";
             }
 
-            $("#memory_MC").html("<center><table class='table table-hover table-condensed table-responsive'>" +
+            $("#memory_MC").html("<center><table class='table table-hover table-sm table-responsive'>" +
                                  "<tbody id=none>" + o1 + "</tbody>" +
                                  "</table></center>");
 
@@ -1143,14 +1169,10 @@
 
                 MC_dashboard[addr].breakpoint = bp_state ;
 
-                if ( bp_state && ('instruction' == get_cfg('DBG_level')) ) {
-                     $.notify({ title: '<strong>INFO</strong>', 
-                         message: 'Please remember to change configuration to execute at microinstruction level.'},
-                              { type: 'success',
-                                z_index: 2000,
-                                newest_on_top: true,
-                                delay: get_cfg('NOTIF_delay'),
-                                placement: { from: 'top', align: 'center' } });
+                if ( bp_state && ('instruction' == get_cfg('DBG_level')) ) 
+                {
+                     wepsim_notify_success('<strong>INFO</strong>', 
+                                           'Please remember to change configuration to execute at microinstruction level.') ;
                 }
         }
 
@@ -1260,7 +1282,7 @@
 
                          line = "";
                          if (j==0)
-                              line += "<td style='border-style: solid; border-width:0px; border-color:lightgray;'><span class='badge'>" + isignature + "</span>&nbsp;</td>" +
+                              line += "<td style='border-style: solid; border-width:0px; border-color:lightgray;'><span class='badge badge-pill badge-secondary float-left'>" + isignature + "</span>&nbsp;</td>" +
                                       "<td style='border-style: solid; border-width:1px; border-color:lightgray;'>" + ico + "</td>" ;
                          else line += "<td style='border-style: solid; border-width:0px; border-color:lightgray;'>&nbsp;</td>" +
                                       "<td style='border-style: solid; border-width:1px; border-color:lightgray;'>&nbsp;</td>" ;
@@ -1338,7 +1360,9 @@
 	          wadd = "0x" + (parseInt(c)+j).toString(16);
 	          if (typeof slebal[wadd] != "undefined")
                        for (var i=0; i<slebal[wadd].length; i++)
-		            clabel = clabel + "<span class='badge'>" + slebal[wadd][i] + "</span>" ;
+		            clabel = clabel + 
+                                     "<span class='badge badge-pill badge-secondary float-left'>" + 
+                                     slebal[wadd][i] + "</span>" ;
 	          else clabel = clabel + "&nbsp;" ;
              }
 
@@ -1541,7 +1565,10 @@
                      s_label = "&nbsp;" ;
                      if (typeof a2l[l] != "undefined") {
                          for (var i=0; i<a2l[l].length; i++) {
-                              s_label = s_label + "<span class='label label-primary'>" + a2l[l][i] + "</span>" ;
+                              s_label = s_label + 
+                                        "<span class='badge badge-pill badge-primary'>" + 
+                                        a2l[l][i] + 
+                                        "</span>" ;
                          }
                      }
 

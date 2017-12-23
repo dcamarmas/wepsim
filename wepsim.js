@@ -114,7 +114,8 @@
         }
 
         if (with_ui) {
-            wepsim_notify_success('<strong>INFO</strong>', 'Assembly was compiled and loaded.') ;
+            wepsim_notify_success('<strong>INFO</strong>', 
+                                  'Assembly was compiled and loaded.') ;
 	}
 
         // update memory and segments
@@ -146,7 +147,8 @@
 
         // update UI
         if (with_ui) {
-            wepsim_notify_success('<strong>INFO</strong>', 'Microcode was compiled and loaded.') ;
+            wepsim_notify_success('<strong>INFO</strong>', 
+                                  'Microcode was compiled and loaded.') ;
         }
 
 	reset() ;
@@ -419,13 +421,21 @@
 
     function wepsim_notify_success ( ntf_title, ntf_message )
     {
-	 return $.notify({ title: ntf_title, message: ntf_message },
-	  	         { type: 'success',
-                           z_index: 2000,
-                           newest_on_top: true,
-                           delay: get_cfg('NOTIF_delay'),
-                           timer: 100,
-                           placement: { from: 'top', align: 'center' } });
+         return simcoreui_notify(ntf_title, 
+                                 ntf_message, 
+                                 'success', get_cfg('NOTIF_delay')) ;
+    }
+
+    function wepsim_notify_error ( ntf_title, ntf_message )
+    {
+         return simcoreui_notify(ntf_title, 
+                                 ntf_message, 
+                                 'danger', 0) ;
+    }
+
+    function wepsim_notify_close ( )
+    {
+         simcoreui_notify_close() ;
     }
 
 
@@ -649,7 +659,7 @@
             if (null != pos) {
                 pos = parseInt(pos[0].match(/\d+/)[0]);
                 lineMsg += '<button type="button" class="btn btn-danger" ' +
-                           '        onclick="$.notifyClose();' +
+                           '        onclick="wepsim_notify_close();' +
                            '                      var marked = ' + editor + '.addLineClass(' + (pos-1) + ', \'background\', \'CodeMirror-selected\');' +
                            '                 setTimeout(function() { ' + editor + '.removeLineClass(marked, \'background\', \'CodeMirror-selected\'); }, 3000);' +
 		           '		     var t = ' + editor + '.charCoords({line: ' + pos + ', ch: 0}, \'local\').top;' +
@@ -657,18 +667,11 @@
 		           '		     ' + editor + '.scrollTo(null, t - middleHeight - 5);">Go line ' + pos + '</button>&nbsp;' ;
             }
 
-	    $.notify({ title: '<strong>ERROR</strong>',
-                       message: errorMsg + '<br>' +
-                                '<center>' +
-                                lineMsg +
-                                '<button type="button" class="btn btn-danger" onclick="$.notifyClose();">Close</button>' +
-                                '</center>' },
-		     { type: 'danger',
-                       z_index: 2000,
-                       newest_on_top: true,
-                       delay: 0,
-                       placement: { from: 'top', align: 'center' }
-                     });
+            wepsim_notify_error('<strong>ERROR</strong>',
+                                errorMsg + '<br>' + '<center>' + lineMsg +
+                                '<button type="button" class="btn btn-danger" ' + 
+                                '        onclick="wepsim_notify_close();">Close</button>' +
+                                '</center>') ;
     }
 
     function showhideAsmElements ( )
@@ -793,29 +796,29 @@
          }
 
          var t = 0 ;
-         var o = '<div class="panel-group" id="accordion1">' ;
+         var o = '<div class="card-group" id="accordion1">' ;
          for (var i=state_history.length-1; i>=0; i--) 
          {
               t = new Date(state_history[i].time) ;
 
-              o += '<div class="panel panel-default">' +
-                   '  <div class="panel-heading" data-toggle="collapse" data-target="#collapse_'+i+'" data-parent="#accordion1">' +
-                   '    <h4 class="panel-title">' +
+              o += '<div class="card">' +
+                   '  <div class="card-header" data-toggle="collapse" data-target="#collapse_'+i+'" data-parent="#accordion1">' +
+                   '    <h5 class="card-title">' +
                    '      <span>[' +
                             t.getFullYear() + '-' + (t.getMonth()+1) + '-' + t.getDate() + '_' +
                             t.getHours()    + '-' + t.getMinutes()   + '-' + t.getSeconds() + '_' + 
                             t.getMilliseconds() + '] ' + state_history[i].title +
                    '      </span>' +
-                   '    </h4>' +
+                   '    </h5>' +
                    '  </div>' +
                    '  <div id="collapse_' + i + '" class="panel-collapse collapse">' +
-                   '    <div class="panel-body">' + 
+                   '    <div class="card-body">' + 
                    '      <div class="container-fluid">' + 
                    '      <div class="row">' + 
-                   '      <button class="btn btn-default btn-sm col-xs-4 col-sm-3 pull-right"' + 
+                   '      <button class="btn btn-secondary btn-sm col-xs-4 col-sm-3 pull-right"' + 
                    '              onclick="CopyFromTextarea(\'ta_state_' + i + '\');" ' + 
                    '              type="button">Copy <span class="hidden-xs">to clipboard</span></button>' +
-                   '      <button class="btn btn-default btn-sm col-xs-4 col-sm-3 pull-right"' + 
+                   '      <button class="btn btn-secondary btn-sm col-xs-4 col-sm-3 pull-right"' + 
                    '              onclick="var txt_chklst1 = get_clipboard_copy();' +
                    '                       var obj_exp1    = wepsim_checklist2state(txt_chklst1);' +
                    '                       var txt_chklst2 = $(\'#ta_state_'+i+'\').val();' +
@@ -824,7 +827,7 @@
                    '           type="button">Check <span class="hidden-xs">differences with clipboard state</span></button>' +
                    '      </div>' + 
                    '      </div>' + 
-                   '      <div class="panel-body" ' + 
+                   '      <div class="card-body" ' + 
                    '           style="padding:5 5 5 5;" ' + 
                    '           id="state_' + i + '">' + state_history[i].content + '</div>' +
                    '      <textarea aria-label="hidden-state"  style="display:none"' +
@@ -855,7 +858,7 @@
 	      var txt_checklist = wepsim_state2checklist(state_obj) ;
 	      $('#end_state1').tokenfield('setTokens', txt_checklist);
 
-              $.notifyClose() ;
+              wepsim_notify_close() ;
               wepsim_notify_success('<strong>INFO</strong>', 'Current state loaded !') ;
 
               // ga
@@ -955,7 +958,8 @@
 				               }, 50);
 			    }
 
-                            wepsim_notify_success('<strong>INFO</strong>', 'Example ready to be used.') ;
+                            wepsim_notify_success('<strong>INFO</strong>', 
+                                                  'Example ready to be used.') ;
                       };
         wepsim_load_from_url(url, do_next) ;
 
@@ -1002,7 +1006,7 @@
     function table_examples_html ( examples )
     {
        var o = '<div class="table-responsive">' +
-               '<table width=100% class="table table-striped table-hover table-condensed">' +
+               '<table width=100% class="table table-striped table-hover table-sm">' +
                '<thead>' +
                '<tr>' +
                '  <th>#</th>' +
@@ -1022,20 +1026,20 @@
 
 	       o = o + ' <tr>' +
 		       ' <td>' + '<b>' + (m+1)   + '</b>' + '</td>' +
-		       ' <td>' + '<b    class="collapse1 collapse in">' + e_level + '</b>' + '</td>' +
+		       ' <td>' + '<b    class="collapse1 collapse show">' + e_level + '</b>' + '</td>' +
 		       ' <td>' + 
-		       '   <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_firmware(\'' + e_id + '\',true);"  style="padding:0 0 0 0;"' +
+		       '   <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_firmware(\'' + e_id + '\',true);"  style="padding:0 0 0 0; margin:0 8 0 0;"' +
 		       '      class="ui-btn btn btn-group ui-btn-inline btn-primary">' + 
-                       '   <b class="collapse2 collapse in">' + e_title + '</b></a>' +
+                       '   <b class="collapse2 collapse show">' + e_title + '</b></a>' +
                        ' </td>' +
-		       ' <td>' + '<span class="collapse3 collapse in">' + e_description + '</span>' + '</td>' +
-		       ' <td class="collapse4 collapse in" style="min-width:150px; max-width:200px">' +
+		       ' <td>' + '<span class="collapse3 collapse show">' + e_description + '</span>' + '</td>' +
+		       ' <td class="collapse4 collapse show" style="min-width:150px; max-width:200px">' +
 		       '     <div class="btn-group btn-group-justified btn-group-md">' +
-		       '         <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_assembly(\'' + e_id + '\',false);"  style="padding:0 0 0 0;"' +
-		       '            class="ui-btn btn btn-group ui-btn-inline btn-default">' +
+		       '         <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_assembly(\'' + e_id + '\',false);"  style="padding:0 0 0 0; margin:0 8 0 0;"' +
+		       '            class="ui-btn btn btn-group ui-btn-inline btn-secondary">' +
 		       '            <b>Assembly</b></a>' +
-		       '         <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_firmware(\'' + e_id + '\',false);" style="padding:0 0 0 0;"' +
-		       '            class="ui-btn btn btn-group ui-btn-inline btn-default">' +
+		       '         <a href="#" onclick="$(\'#example1\').modal(\'hide\'); load_from_example_firmware(\'' + e_id + '\',false);" style="padding:0 0 0 0; margin:0 7 0 0;"' +
+		       '            class="ui-btn btn btn-group ui-btn-inline btn-secondary">' +
 		       '            <b>Firmware</b></a>' +
 		       '     </div>' +
 		       ' </td>' +
@@ -1055,7 +1059,7 @@
     function table_helps_html ( helps )
     {
        var o = '<div class="table-responsive">' +
-               '<table width=100% class="table table-striped table-hover table-condensed">' +
+               '<table width=100% class="table table-striped table-hover table-sm">' +
                '<thead>' +
                '<tr>' +
                '  <th>#</th>' +
@@ -1087,10 +1091,10 @@
 		       ' <td>' + 
                        '  <a href="#" ' +
                        '     class="ui-btn btn btn-group ui-btn-inline" ' +
-                       '     style="background-color: #D4DB17; padding:0 0 0 0;" ' +
+                       '     style="background-color: #D4DB17; padding:0 0 0 0; margin:2 8 0 0;" ' +
 		       '     onclick="' + onclick_code + '"><b>' + e_title + '</b></a>' +
                        ' </td>' +
-		       ' <td class="collapse2 collapse in">' +
+		       ' <td class="collapse2 collapse show">' +
 		       '   <c>' + e_description + '</c>' + 
                        ' </td>' +
 		       '</tr>' ;
@@ -1116,43 +1120,43 @@
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab11').trigger('click');
-						     $('#select5a').selectpicker('val', 11);
+						     $('#select5a').val(11);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3029');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab11').trigger('click');
-						     $('#select5a').selectpicker('val', 11);
+						     $('#select5a').val(11);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3031');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab11').trigger('click');
-						     $('#select5a').selectpicker('val', 11);
+						     $('#select5a').val(11);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3001');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab14').trigger('click');
-						     $('#select5a').selectpicker('val', 14);
+						     $('#select5a').val(14);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3775');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab15').trigger('click');
-						     $('#select5a').selectpicker('val', 15);
+						     $('#select5a').val(15);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3829');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab12').trigger('click');
-						     $('#select5a').selectpicker('val', 12);
+						     $('#select5a').val(12);
                                                   }, false);
 	        var o  = ref_p.getElementById('text3845');
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab12').trigger('click');
-						     $('#select5a').selectpicker('val', 12);
+						     $('#select5a').val(12);
                                                   }, false);
                 var o  = ref_p.getElementById('text3459-7');
                 if (o != null) o.addEventListener('click',
@@ -1171,7 +1175,7 @@
 	        if (o != null) o.addEventListener('click',
                                                   function() {
                                                      $('#tab16').trigger('click');
-						     $('#select5a').selectpicker('val', 16);
+						     $('#select5a').val(16);
                                                   }, false);
                 var o  = ref_cu.getElementById('text4138');
                 if (o != null) o.addEventListener('click',
@@ -1487,7 +1491,7 @@
             only_errors = false ;
 
         o += "<table style='margin:0 0 0 0;' " + 
-             "       class='table table-hover table-bordered table-condensed'>" +
+             "       class='table table-hover table-bordered table-sm'>" +
              "<thead>" +
              "<tr>" +
              "<th>Type</th>" +
