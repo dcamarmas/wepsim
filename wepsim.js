@@ -690,9 +690,13 @@
     function set_cpu_cu_size ( diva, divb, new_value )
     {
 	var a = new_value;
-	var b = 100 - a;
-	$('#eltos_cpu_a').css({width: a+'%'});
-	$('#eltos_cpu_b').css({width: b+'%'});
+	var b = 12 - a;
+
+	$('#eltos_cpu_a').removeClass();
+	$('#eltos_cpu_a').addClass('col-' + a);
+
+	$('#eltos_cpu_b').removeClass();
+	$('#eltos_cpu_b').addClass('col-' + b);
     }
 
 
@@ -796,7 +800,7 @@
          }
 
          var t = 0 ;
-         var o = '<div class="card-group" id="accordion1">' ;
+         var o = '<div class="card-group-vertical" id="accordion1">' ;
          for (var i=state_history.length-1; i>=0; i--) 
          {
               t = new Date(state_history[i].time) ;

@@ -158,7 +158,7 @@
                 <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
                     <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
-                <span class="ui-title"><b>WepSIM</b> <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Simulator</span>
+                <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Simulator</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
                     <a id="menu1"
                        href="#actions_panel"
@@ -169,20 +169,24 @@
 	<div role="main" class="ui-content">
 
             <div class="row">
-                <div id="col1" class="col" style="padding:0 0 0 0;">
-		    <div data-role="tabs" id="tabs2">
-    		      <div data-role="navbar" id="tabsnav2" class="ui-responsive">
-		        <ul>
-		          <li style="clear:none;width:50% !important">
-                              <a id="tab26" href="#eltos_cpu" 
-                                 onclick="if (is_drawing() == false)
-                                              $('#slider2d').toggle(); 
+                <div id="col1" class="" style="padding:0 0 0 0;">
+
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs nav-fill nav-pills" role="tablist">
+			  <li class="nav-item">
+			      <a id="tab26" href="#eltos_cpu" 
+			         class="nav-link active" data-toggle="tab" role="tab"
+		                 aria-controls="processor"
+				 onclick="if (is_drawing() == false)
+					      $('#slider2d').toggle(); 
 					  wepsim_reset_max_turbo() ;
-                                          start_drawing(); 
-                                          refresh();">Processor</a>
-                          </li>
-		          <li style="clear:none;width:50% !important">
+					  start_drawing(); 
+					  refresh();">Processor</a>
+			  </li>
+			  <li class="nav-item">
                               <a id="tab24" href="#eltos_dbg"  
+			         class="nav-link" data-toggle="tab" role="tab"
+		                 aria-controls="assembly debugger"
                                  onclick="stop_drawing(); 
 					  wepsim_reset_max_turbo() ;
                                           var o1 = fullshow_asmdbg_pc();
@@ -190,92 +194,102 @@
                                           if (typeof o1[0] == 'undefined') 
                                               return;
                                           obj_byid[0].scrollTop = o1[0].offsetTop;">Assembly Debugger</a>
-                          </li>
-		        </ul>
-		      </div>
-		      <div id="eltos_cpu" class="ui-body-d ui-content" style="padding:10 0 10 0">
-                           <div class="container-fluid" style="padding:0 0 0 0">
-			     <div  id="slider2d" style="display: hidden;">
-			     <form id="slider2f" class="full-width-slider" style="margin:0 20 20 5">
-				 <input aria-label="Show CPU/CU" type="range" name="slider2" id="slider2" 
-                                        min="0" max="100" value="55" step="5"
-				        data-show-value="false"
-                                        onchange="set_cpu_cu_size('#eltos_cpu_a', '#eltos_cpu_b', this.value);
-					          set_cfg('CPUCU_size', this.value); 
-                                                  save_cfg();"
-                                        style="display:none;">
-			     </form>
-			     </div>
-			     <div class="ui-grid-a">
-				<div class="ui-block-a" id="eltos_cpu_a" style="padding:0 0 0 0; width:60%">
-				    <object id="svg_p" data="images/processor6.svg" type="image/svg+xml" style="transform:translate3d(0,0,0);">
-					Your browser doesn't support SVG
-				    </object>
-				</div>
-				<div class="ui-block-b" id="eltos_cpu_b" style="padding:0 0 0 0; width:40%">
-				    <object id="svg_cu" data="images/controlunit6.svg" type="image/svg+xml" style="transform:translate3d(0,0,0);">
-					Your browser doesn't support SVG
-				    </object>
-				</div>
-			     </div>
-                           </div>
-		      </div>
-		      <div id="eltos_dbg"  class="ui-body-d ui-content">
-			   <center>
-		           <div id="asm_table" style="overflow-x:auto;">
-		   	   <table class='table ui-responsive ui-table' style="margin-bottom:0px; min-width:700px;">
-		   	   <thead>
-			   <tr>
-		   <th width=1%>
-		   <a href="#checkboxespopup" data-rel="popup">&plusmn;</a>
-		   <div data-role="popup" id="checkboxespopup">
-		       <label><input aria-label="Show breakpoint"         type="checkbox" value="1" id="asm_break"  name="asm_break" checked="checked"><span>breakpoints</span></label>
-		       <label><input aria-label="Show address"            type="checkbox" value="1" id="asm_addr"   name="asm_addr"  checked="checked"><span>address</span></label>
-		       <label><input aria-label="Show label"              type="checkbox" value="1" id="asm_label2" name="asm_label2" checked="checked"><span>labels</span></label>
-		       <label><input aria-label="Show pseudo-instruction" type="checkbox" value="1" id="asm_pins"   name="asm_pins"  checked="checked"><span>pseudo</span><span class="hidden-xs">-instructions</span></label>
-		       <label><input aria-label="Show label"              type="checkbox" value="1" id="asm_label1" name="asm_label1" checked="checked"><span>labels</span></label>
-		       <label><input aria-label="Show instruction"        type="checkbox" value="1" id="asm_ins"    name="asm_ins"   checked="checked"><span>assembly</span></label>
-		   </div>
-		   </th>
-			   <th width=10% class="asm_break"><span>break</span><span class="hidden-xs"><small>points</small></span></th>
-			   <th width=15% class="asm_addr"><span>addr</span><span class="hidden-xs">ess</span></th>
-                           <th width=10% class="asm_label2" align=right><span>labels</span></th>
-                           <th width=20% class="asm_pins"   align=left><span>pseudo</span><span class="hidden-xs"><small>instructions</small></span></th>
-                           <th width=10% class="asm_label1" align=right><span>labels</span></th>
-                           <th width=25% class="asm_ins"    align=left><span>assembly</span></th>
-			   </tr>
-			   </thead>
-			   </table>
-		   	   </div>
-			   </center>
+			  </li>
+			</ul>
 
-		           <div id="asm_debugger_container" 
-                                style="overflow-y:auto; overflow-x:auto; height:70vh !important;">
-                                <div id="asm_debugger" style="min-width:700px;">
-                                <br>
-                                <ol>
-                                <li>Load the microcode to be used.</li>
-                                    <ul>
-                                    <li>You can use an example of microcode, load it from a file or you can edit one.</li>
-                                    </ul>
-                                <br>
-                                <li>Load the assembly to be used.</li>
-                                    <ul>
-                                    <li>You can use an assembly example, load it from a file or you can edit one.</li>
-                                    </ul>
-                                <br>
-                                <li>Come back to the simulator in order to execute the microcode+assembly loaded before.</li>
-                                    <ul>
-                                    <li>Each step could be executed at microinstruction or instruction level.</li>
-                                    </ul>
-                                </ol>
-                                </div>
-		           </div>
-		      </div>
-	    	    </div>
+			<!-- Tab panes -->
+			<div class="tab-content">
+			  <div id="eltos_cpu" class="tab-pane active" role="tabpanel">
+				   <div class="container-fluid" style="padding:0 0 0 0">
+				     <div  id="slider2d" style="display: hidden;">
+				     <form id="slider2f" class="full-width-slider" style="margin:20 20 0 5">
+					 <input aria-label="Show CPU/CU" type="range" name="slider2" id="slider2" 
+						min="0" max="12" value="7" step="1"
+						data-show-value="false"
+						onchange="set_cpu_cu_size('#eltos_cpu_a', '#eltos_cpu_b', this.value);
+							  set_cfg('CPUCU_size', this.value); 
+							  save_cfg();"
+						style="display:none;">
+				     </form>
+				     </div>
+					<div class="container" style="margin:20 0 0 0">
+					  <div class="row">
+					    <div class="col" id="eltos_cpu_a" style="padding:0 5 0 5">
+						    <object id="svg_p" 
+							    data="images/processor6.svg" 
+							    type="image/svg+xml" 
+							    style="transform:translate3d(0,0,0);">
+							Your browser doesn't support SVG
+						    </object>
+					    </div>
+					    <div class="col" id="eltos_cpu_b" style="padding:0 5 0 5">
+						    <object id="svg_cu" 
+							    data="images/controlunit6.svg" 
+							    type="image/svg+xml" 
+							    style="transform:translate3d(0,0,0);">
+							Your browser doesn't support SVG
+						    </object>
+					    </div>
+					  </div>
+					</div>
+				   </div>
+			  </div>
+			  <div id="eltos_dbg" class="tab-pane"        role="tabpanel">
+				   <center>
+				   <div id="asm_table" style="overflow-x:auto;">
+				   <table class='table ui-responsive ui-table' style="margin-bottom:0px; min-width:700px;">
+				   <thead>
+				   <tr>
+			   <th width=1%>
+			   <a href="#checkboxespopup" data-rel="popup">&plusmn;</a>
+			   <div data-role="popup" id="checkboxespopup">
+			       <label><input aria-label="Show breakpoint"         type="checkbox" value="1" id="asm_break"  name="asm_break" checked="checked"><span>breakpoints</span></label>
+			       <label><input aria-label="Show address"            type="checkbox" value="1" id="asm_addr"   name="asm_addr"  checked="checked"><span>address</span></label>
+			       <label><input aria-label="Show label"              type="checkbox" value="1" id="asm_label2" name="asm_label2" checked="checked"><span>labels</span></label>
+			       <label><input aria-label="Show pseudo-instruction" type="checkbox" value="1" id="asm_pins"   name="asm_pins"  checked="checked"><span>pseudo</span><span class="hidden-xs">-instructions</span></label>
+			       <label><input aria-label="Show label"              type="checkbox" value="1" id="asm_label1" name="asm_label1" checked="checked"><span>labels</span></label>
+			       <label><input aria-label="Show instruction"        type="checkbox" value="1" id="asm_ins"    name="asm_ins"   checked="checked"><span>assembly</span></label>
+			   </div>
+			   </th>
+				   <th width=10% class="asm_break"><span>break</span><span class="hidden-xs"><small>points</small></span></th>
+				   <th width=15% class="asm_addr"><span>addr</span><span class="hidden-xs">ess</span></th>
+				   <th width=10% class="asm_label2" align=right><span>labels</span></th>
+				   <th width=20% class="asm_pins"   align=left><span>pseudo</span><span class="hidden-xs"><small>instructions</small></span></th>
+				   <th width=10% class="asm_label1" align=right><span>labels</span></th>
+				   <th width=25% class="asm_ins"    align=left><span>assembly</span></th>
+				   </tr>
+				   </thead>
+				   </table>
+				   </div>
+				   </center>
+
+				   <div id="asm_debugger_container" 
+					style="overflow-y:auto; overflow-x:auto; height:70vh !important;">
+					<div id="asm_debugger" style="min-width:700px;">
+					<br>
+					<ol>
+					<li>Load the microcode to be used.</li>
+					    <ul>
+					    <li>You can use an example of microcode, load it from a file or you can edit one.</li>
+					    </ul>
+					<br>
+					<li>Load the assembly to be used.</li>
+					    <ul>
+					    <li>You can use an assembly example, load it from a file or you can edit one.</li>
+					    </ul>
+					<br>
+					<li>Come back to the simulator in order to execute the microcode+assembly loaded before.</li>
+					    <ul>
+					    <li>Each step could be executed at microinstruction or instruction level.</li>
+					    </ul>
+					</ol>
+					</div>
+				   </div>
+			  </div>
+			</div>
                 </div>
 
-                <div id="col2" class="col-4" style="padding:0 8px 0 0px;">
+                <div id="col2" class="" style="padding:0 8px 0 0px;">
 
                     <div class="btn-toolbar" role="toolbar" id="sim_toolbar" style="padding: 0px 0px 2px 0px;">
 			<div class="btn-group btn-group-justified col-12" role="group" style="padding: 0px 0px 0px 0px;">
@@ -310,12 +324,12 @@
 			<div class="ui-block-a" style="width:15%">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
-		                  onclick="wepsim_dialog_current_state();"><b><span class="hidden-xs">State</span><span class="visible-xs">St.</span></b></button>
+		                  onclick="wepsim_dialog_current_state();"><c><span class="hidden-xs">State</span><span class="visible-xs">St.</span></c></button>
 			</div>
 			<div class="ui-block-d" style="width:27%">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
-                                  data-toggle="modal" data-target="#confighw"><b><span class="hidden-xs">Configuration</span><span class="visible-xs">Cfg.</span></b></button>
+                                  data-toggle="modal" data-target="#confighw"><c><span class="hidden-xs">Configuration</span><span class="visible-xs">Cfg.</span></c></button>
 			</div>
 			<div class="ui-block-c" style="width:40%; margin: 7 0 0 0">
                           <select name="select5a" id="select5a" class="custom-select"
@@ -346,7 +360,7 @@
 				           $('#tab' + val).trigger('click');
 				           if ('11' == val)
 					        show_rf_values();
-				           else show_memories_values();"><b>Refresh</b></button>
+				           else show_memories_values();"><c>Refresh</c></button>
 			</div>
     		    </fieldset>
 
@@ -407,11 +421,11 @@
                 <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
                     <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
-                <span class="ui-title"><b>WepSIM</b> <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Microcode</span>
+                <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Microcode</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
                     <a id="menu1"
                        href="#actions_panel"
-                       class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Menu</a>
+                       class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline">Menu</a>
 		</div>
 	</div><!-- /header -->
 
@@ -528,11 +542,11 @@
                 <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
                     <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
-                <span class="ui-title"><b>WepSIM</b> <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Assembly</span>
+                <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Assembly</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
                     <a id="menu1"
                        href="#actions_panel"
-                       class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Menu</a>
+                       class="ui-btn ui-btn-b ui-corner-all ui-shadow ui-btn-inline">Menu</a>
 		</div>
 	</div><!-- /header -->
 
@@ -1462,10 +1476,8 @@
             <div id="bot_check2" class="carousel slide" data-ride="carousel" data-interval="false">
                <div class="carousel-inner" role="listbox">
                   <div class="carousel-item active">
-                        <div class="card card-info">
-		        <div class="card-heading">
+                        <div class="alert alert-info">
                            <h4><span id="dlg_title2">&nbsp;</span></h4>
-                        </div>
                         </div>
 
                         <h4>Requeriment list to compare with:</h4>
@@ -1549,10 +1561,7 @@
 		    $("#listview_1").listview();
 
 		    $("#tabsnav1").navbar();
-		    $("#tabsnav2").navbar();
-
 		    $("#tabs1").tabs();
-		    $("#tabs2").tabs();
 
 		    inputfirm = CodeMirror.fromTextArea(document.getElementById("inputFirmware"), 
                                     {
@@ -1661,7 +1670,7 @@
             // split (experimental)
 if (!( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ))
 {
-	    var split1 = Split(['#col1', '#col2'], { sizes: [65, 35], gutterSize: 5 });
+	    var split1 = Split(['#col1', '#col2'], { sizes: [65, 35], gutterSize: 10 });
             $(window).resize(function() {
                                 if ($(window).width() > 1000) {
                                     split1.setSizes([65, 35]);
