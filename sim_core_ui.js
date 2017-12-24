@@ -926,10 +926,11 @@
                      valuei = value[i*2] + value[i*2+1] ;
 
                      if (typeof labeli != "undefined")
-                          value2 += '<span style="border:1px solid gray;">' + 
-				    valuei + 
-                                    '<span class="badge badge-pill badge-primary" style="position:relative;top:-8px;">' + labeli + '</span>' +
-				    '</span>' ;
+                         value2 += '<span>' +
+                                   '<span style="border:1px solid gray;">' + valuei + '</span>' +
+                                   '<span class="badge badge-pill badge-primary" ' + 
+                                   '     style="position:relative;top:-8px;">' + labeli + '</span>' +
+                                   '</span>' ;
                      else value2 += valuei + ' ' ;
                 }
 
@@ -1017,9 +1018,11 @@
 
                 maddr = "0x" + parseInt(key).toString(16) ;
                 if (typeof revlabels[key] != "undefined")
-                    maddr = '<span class="badge badge-pill badge-primary float-left" ' + 
+                    maddr = '<span>' +
+                            '<span class="badge badge-pill badge-primary" ' + 
                             '      style="position:relative;top:4px;">' + revlabels[key] + '</span>' +
-                            '<span style="border:1px solid gray;">' + maddr + '</span>' ;
+                            '<span style="border:1px solid gray;">' + maddr + '</span>' +
+                            '</span>' ;
 
 		trpin = "&nbsp;" ;
 		if (true == memory_dashboard[key].breakpoint)
@@ -1030,14 +1033,14 @@
                            "    style='color:blue; font-size:small; font-weight:bold' " +
 			   "    onclick='dbg_set_breakpoint(" + key + "); " +
                            "             if (event.stopPropagation) event.stopPropagation();'>" +
-			   "<td width=12% align=right>" + maddr + "</td>" +
+			   "<td width=15% align=right>" + maddr + "</td>" +
 			   "<td width=1% id='mcpin" + key + "' style='padding:5 0 0 0;'>" + trpin + "</td>" +
 			   "<td>" + value + "</td></tr>";
 		else o1 += "<tr id='maddr" + key + "' " +
                            "    style='color:black; font-size:small; font-weight:normal' " +
 			   "    onclick='dbg_set_breakpoint(" + key + "); " +
                            "             if (event.stopPropagation) event.stopPropagation();'>" +
-			   "<td width=12% align=right>" + maddr + "</td>" +
+			   "<td width=15% align=right>" + maddr + "</td>" +
 			   "<td width=1% id='mcpin" + key + "' style='padding:5 0 0 0;'>" + trpin + "</td>" +
 			   "<td>" + value + "</td></tr>";
             }

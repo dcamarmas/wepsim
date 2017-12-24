@@ -163,8 +163,9 @@
 <div data-role="page" id="main1">
 
 	<div data-role="header" data-position="fixed" data-disable-page-zoom="false" data-theme="a">
-                <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
-                    <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
+                <div id="button_bar" class="ui-btn-left" 
+                     data-role="controlgroup" data-type="horizontal">
+                    <a href="#" data-target="#about2" data-toggle="modal" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
                 <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Simulator</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
@@ -429,7 +430,7 @@
 
 	<div data-role="header" data-position="fixed" data-disable-page-zoom="false" data-theme="a">
                 <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
-                    <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
+                    <a href="#" data-target="#about2" data-toggle="modal" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
                 <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Microcode</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
@@ -550,7 +551,7 @@
 
 	<div data-role="header" data-position="fixed" data-disable-page-zoom="false" data-theme="a">
                 <div id="button_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
-                    <a href="#about1" data-rel="popup" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
+                    <a href="#" data-target="#about2" data-toggle="modal" data-position-to="window"><img alt="ARCOS logo" src="images/arcos.svg" height="40"></a>
                 </div>
                 <span class="ui-title">WepSIM <span class="badge badge-secondary"><div class="wsversion">X</div></span> / Assembly</span>
 		<div id="action_bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
@@ -1126,64 +1127,6 @@
 </div><!-- /popup -->
 
 
-<div data-role="popup" id="about1" 
-     data-theme="a" data-dismissible="false" data-animate="false" data-overlay-theme="b">
-
-   <div data-role="header" data-theme="a">
-        <h1><b>WepSIM</b> <span class="badge btn-success"><div class="wsversion">X</div></span> </h1>
-        <a href="#" 
-           data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" 
-           class="ui-btn-right">Close</a>
-   </div>
-   <div role="main" class="ui-content">
-
-        <div style="font-family: Helvetica Neue,Helvetica,Arial,sans-serif; font-size: 16px; line-height: 24px; padding-bottom: 6.4px; padding-left: 8px; padding-right: 8px; padding-top: 6.4px; max-width: 90vw;">
-        <div class="row">
-        <div class="col-xs-12 col-sm-12">
-            Copyright &copy; 2015-2017 <br>
-	    <p>
-
-            <a href="#" 
-               class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
-               data-toggle="popover1"
-               data-html="true" 
-               data-content="<img src='images/author_fgarcia.png' height='200'/>"
-               title="F&eacute;lix Garc&iacute;a Carballeira">F&eacute;lix Garc&iacute;a Carballeira</a> +
-            <a href="#" 
-               class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
-               data-toggle="popover1"
-               data-html="true" 
-               data-content="<img src='images/author_acaldero.png' height='200'/>"
-               title="Alejandro Calder&oacute;n Mateos">Alejandro Calder&oacute;n Mateos</a> +
-            <a href="#" 
-               class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
-               data-toggle="popover1"
-               data-html="true" 
-               data-content="<img src='images/author_jprieto.png' height='200'/><br><br><a href='https://es.linkedin.com/in/javier-prieto-cepeda'>linkedin</a>"
-               title="Javier Prieto Cepeda">Javier Prieto Cepeda</a> +
-            <a href="#" 
-               class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
-               data-toggle="popover1"
-               data-html="true" 
-               data-content="<img src='images/author_salonso.png' height='200'/>"
-               title="Sa&uacute;l Alonso Monsalve">Sa&uacute;l Alonso Monsalve</a>
-            <p>
-
-            <a href="http://www.arcos.inf.uc3m.es/">ARCOS Group</a><br>
-            <a href="http://www.inf.uc3m.es/en/">Computer Science and Engineering Department</a><br>
-            <a href="http://www.uc3m.es/">Universidad Carlos III de Madrid</a><br>
-	    <p>
-
-        </div>
-        </div>
-
-        </div>
-
-   </div>
-
-</div><!-- /popup -->
-
-
 <div data-role="popup" id="bin1" 
      data-theme="a" data-dismissible="true" data-animate="false" data-overlay-theme="a">
 
@@ -1546,6 +1489,66 @@
 </div> <!-- /.modal -->
 
 
+<div id="about2" class="modal">
+     <div class="modal-dialog" style="max-width:85vw; height:70vh;">
+	<div class="modal-content">
+	   <div class="modal-header">
+                <h5><b>WepSIM</b> <span class="badge btn-success"><div class="wsversion">X</div></span></h5>
+		<button type="button" data-role="button"
+                        class="close ui-btn-right ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all" 
+                        data-dismiss="modal" aria-hidden="true">x</button>
+		<center>
+                </center>
+	   </div>
+	   <div class="modal-body">
+
+		<div style="font-family: Helvetica Neue,Helvetica,Arial,sans-serif; font-size: 16px; line-height: 24px; padding-bottom: 6.4px; padding-left: 8px; padding-right: 8px; padding-top: 6.4px; max-width: 90vw;">
+		<div class="row">
+		<div class="col-12">
+		    Copyright &copy; 2015-2017 <br>
+		    <p>
+
+		    <a href="#" 
+		       class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
+		       data-toggle="popover1"
+		       data-html="true" 
+		       data-content="<img src='images/author_fgarcia.png' height='200'/>"
+		       title="F&eacute;lix Garc&iacute;a Carballeira">F&eacute;lix Garc&iacute;a Carballeira</a> +
+		    <a href="#" 
+		       class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
+		       data-toggle="popover1"
+		       data-html="true" 
+		       data-content="<img src='images/author_acaldero.png' height='200'/>"
+		       title="Alejandro Calder&oacute;n Mateos">Alejandro Calder&oacute;n Mateos</a> +
+		    <a href="#" 
+		       class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
+		       data-toggle="popover1"
+		       data-html="true" 
+		       data-content="<img src='images/author_jprieto.png' height='200'/><br><br><a href='https://es.linkedin.com/in/javier-prieto-cepeda'>linkedin</a>"
+		       title="Javier Prieto Cepeda">Javier Prieto Cepeda</a> +
+		    <a href="#" 
+		       class="btn btn-info" style="padding:0 0 0 0; color:white !important;"
+		       data-toggle="popover1"
+		       data-html="true" 
+		       data-content="<img src='images/author_salonso.png' height='200'/>"
+		       title="Sa&uacute;l Alonso Monsalve">Sa&uacute;l Alonso Monsalve</a>
+		    <p>
+
+		    <a href="http://www.arcos.inf.uc3m.es/">ARCOS Group</a><br>
+		    <a href="http://www.inf.uc3m.es/en/">Computer Science and Engineering Department</a><br>
+		    <a href="http://www.uc3m.es/">Universidad Carlos III de Madrid</a><br>
+		    <p>
+
+		</div>
+		</div>
+		</div>
+
+	   </div>
+	</div>
+     </div>
+</div> <!-- /.modal -->
+
+
 <script>
     window.addEventListener("beforeunload", function (e) {
        var confirmationMessage = "\o/";
@@ -1563,7 +1566,6 @@
                     ko.options.deferUpdates = true;
 
 		    $("#bin1").enhanceWithin().popup();
-		    $("#about1").enhanceWithin().popup();
 		    $("#config1").enhanceWithin().popup();
 
 		    $("#actions_panel").panel().enhanceWithin();
