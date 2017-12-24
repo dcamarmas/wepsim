@@ -69,7 +69,7 @@
 		/*
 		 *  simulation screen: Notification, etc.
 		 */
-               WSCFG['NOTIF_delay']         = { value:500,                type:"int"} ;
+               WSCFG['NOTIF_delay']         = { value:1500,               type:"int"} ;
                WSCFG['CPUCU_size']          = { value:7,                  type:"int"} ;
 
                WSCFG['is_interactive']      = { value:true,               type:"boolean"};

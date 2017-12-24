@@ -821,14 +821,14 @@
                    '      <div class="row">' + 
                    '      <button class="btn btn-secondary btn-sm col-xs-4 col-sm-3 pull-right"' + 
                    '              onclick="CopyFromTextarea(\'ta_state_' + i + '\');" ' + 
-                   '              type="button">Copy <span class="hidden-xs">to clipboard</span></button>' +
+                   '              type="button">Copy <span class="d-xs-none">to clipboard</span></button>' +
                    '      <button class="btn btn-secondary btn-sm col-xs-4 col-sm-3 pull-right"' + 
                    '              onclick="var txt_chklst1 = get_clipboard_copy();' +
                    '                       var obj_exp1    = wepsim_checklist2state(txt_chklst1);' +
                    '                       var txt_chklst2 = $(\'#ta_state_'+i+'\').val();' +
                    '                       var obj_exp2    = wepsim_checklist2state(txt_chklst2);' +
                    '                       wepsim_dialog_check_state(\'check_results1\', obj_exp1, obj_exp2);"' +
-                   '           type="button">Check <span class="hidden-xs">differences with clipboard state</span></button>' +
+                   '           type="button">Check <span class="d-xs-none">differences with clipboard state</span></button>' +
                    '      </div>' + 
                    '      </div>' + 
                    '      <div class="card-body" ' + 
@@ -1499,17 +1499,17 @@
              "<thead>" +
              "<tr>" +
              "<th>Type</th>" +
-             "<th><span class='hidden-xs'>Identification</span><span class='visible-xs'>Id.</span></th>" +
-             "<th><span class='hidden-xs'>Values in the </span>clipboard<span class='hidden-xs'> state</th>" +
-             "<th><span class='hidden-xs'>Values in the </span>selected<span class='hidden-xs'> state</th>" +
+             "<th><span class='d-xs-none'>Identification</span><span class='d-sm-none'>Id.</span></th>" +
+             "<th><span class='d-xs-none'>Values in the </span>clipboard<span class='d-xs-none'> state</th>" +
+             "<th><span class='d-xs-none'>Values in the </span>selected<span class='d-xs-none'> state</th>" +
              "</tr>" +
              "</thead>" +
              "<tbody>" ;
         for (var i=0; i<checklist.length; i++)
         {
              if (checklist[i].fulfill === false)
-                  color = "danger" ;
-             else color = "success" ;
+                  color = "table-danger" ;
+             else color = "table-success" ;
 
              if (only_errors && checklist[i].fulfill)
                  continue ;

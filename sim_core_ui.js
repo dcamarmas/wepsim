@@ -525,7 +525,7 @@
 
                 var showkey = sim_eltos[s].name;
                 if (sim_eltos[s].nbits > 1)
-                    showkey = showkey.substring(0,2) + '<span class="hidden-xs">' + showkey.substring(2,showkey.length) + '</span>' ;
+                    showkey = showkey.substring(0,2) + '<span class="d-xs-none">' + showkey.substring(2,showkey.length) + '</span>' ;
 
                 var b = filter[i].split(",")[1] ;
                 var divclass = divclasses[b] ;
@@ -543,7 +543,7 @@
                       "</div>" ;
             }
 
-            $(jqdiv).html("<div class='row'>" + o1 + "</div>");
+            $(jqdiv).html("<div class='row justify-content-center'>" + o1 + "</div>");
 
 	    $("[data-toggle=popover-bottom]").popover({
 	    	    html:      true,
@@ -603,7 +603,7 @@
                               "REG_RT1,1", "REG_RT2,1", "REG_RT3,1",
                               "REG_MAR,1", "REG_MBR,1", "REG_MICROADDR,1" ] ;
 
-        var divclasses = [ "col-12",
+        var divclasses = [ "col-11",
                            "col" ] ;
 
         function init_states ( jqdiv )
@@ -633,7 +633,7 @@
             }
 
             // stats holder
-            var o1 = "<center>" +
+            var o1 = "<div class='col-12'>" +
                      "<table class='table table-hover table-sm table-bordered table-responsive'>" ;
             for (var i=0; i<IO_INT_FACTORY.length; i++)
             {
@@ -647,7 +647,7 @@
                      "</tr>" ;
             }
             o1 += "</table>" +
-                  "</center>" ;
+                  "</div>" ;
             $(jqdiv).html("<div class='row'>" + o1 + "</div>");
 
             // knockout binding
@@ -670,7 +670,7 @@
             }
 
             // stats holder
-            var o1 = "<center>" +
+            var o1 = "<div class='col-12'>" +
                      "<table class='table table-hover table-sm table-bordered table-responsive'>" +
                      "<tr>" +
                      "<td align=center width=50%>Instructions</td>" +
@@ -685,7 +685,7 @@
                      "</td>" +
                      "</tr>" +
                      "</table>" +
-                     "</center>" ;
+                     "</div>" ;
             $(jqdiv).html("<div class='row'>" + o1 + "</div>");
 
             // knockout binding
@@ -749,16 +749,16 @@
                      "<tbody class='no-ui-mini'>" +
                      "<tr>" +
                      "<td align=center width='33%'>" +
-                     "  <span class='hidden-xs'>Interruption identificator</span>" +
-                     "  <span class='visible-xs'>Int. Id.<br>(0 - 7)</span>" +
+                     "  <span class='d-xs-none'>Interruption identificator</span>" +
+                     "  <span class='d-sm-none'>Int. Id.<br>(0 - 7)</span>" +
                      "</td>" +
                      "<td align=center width='33%'>" +
-                     "  <span class='hidden-xs'>CLK period (<b>0</b> - &infin;)</span>" +
-                     "  <span class='visible-xs'>CLK ticks <br>(<b>0</b> - &infin;)</span>" +
+                     "  <span class='d-xs-none'>CLK period (<b>0</b> - &infin;)</span>" +
+                     "  <span class='d-sm-none'>CLK ticks <br>(<b>0</b> - &infin;)</span>" +
                      "</td>" +
                      "<td align=center width='33%'>" +
-                     "  <span class='hidden-xs'>Probability (0 - 1)</span>" +
-                     "  <span class='visible-xs'>Probability <br>(0 - 1)</span>" +
+                     "  <span class='d-xs-none'>Probability (0 - 1)</span>" +
+                     "  <span class='d-sm-none'>Probability <br>(0 - 1)</span>" +
                      "</td>" +
                      "</tr>" ;
             for (var i=0; i<8; i++)
@@ -865,8 +865,8 @@
                 if (typeof sname != "undefined")
                     o1 += '<div style="position:sticky;top:0px;z-index:1;width:50%;background:#FFFFFF;"><b><small>' + sname + '</small></b></div>' ;
 
-                taddr = '<small>0x</small>' + pack5(valkeys[3]) + '<span class="hidden-xs"> </span>-' + 
-                        '<span class="hidden-xs"><small> 0x</small></span>' + pack5(valkeys[0]) ;
+                taddr = '<small>0x</small>' + pack5(valkeys[3]) + '<span class="d-xs-none"> </span>-' + 
+                        '<span class="d-xs-none"><small> 0x</small></span>' + pack5(valkeys[0]) ;
 		if (key == index)
 		     o1 += "<div class='row' id='addr" + key + "'" +
                            "     style='color:blue; font-size:small; font-weight:bold;    border-bottom: 1px solid lightgray !important'>" +
@@ -926,8 +926,10 @@
                      valuei = value[i*2] + value[i*2+1] ;
 
                      if (typeof labeli != "undefined")
-                          value2 += '<span style="border:1px solid gray;">' + valuei + '</span>' +
-                                    '<span class="badge badge-pill badge-primary float-right" style="position:relative;top:-2px;">' + labeli + '</span>' ;
+                          value2 += '<span style="border:1px solid gray;">' + 
+				    valuei + 
+                                    '<span class="badge badge-pill badge-primary" style="position:relative;top:-8px;">' + labeli + '</span>' +
+				    '</span>' ;
                      else value2 += valuei + ' ' ;
                 }
 
@@ -1016,7 +1018,7 @@
                 maddr = "0x" + parseInt(key).toString(16) ;
                 if (typeof revlabels[key] != "undefined")
                     maddr = '<span class="badge badge-pill badge-primary float-left" ' + 
-                            '      style="position:relative;top:2px;">' + revlabels[key] + '</span>' +
+                            '      style="position:relative;top:4px;">' + revlabels[key] + '</span>' +
                             '<span style="border:1px solid gray;">' + maddr + '</span>' ;
 
 		trpin = "&nbsp;" ;
