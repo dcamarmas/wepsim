@@ -115,6 +115,14 @@
     .ui-helper-hidden-accessible {
         display: none;
     }
+
+    // bootbox for bootstrap 4 trick
+    .bootbox .modal-header h4 {
+	        order: 0;
+    }
+    .bootbox .modal-header button {
+	        order: 1;
+    }
     </style>
 
     <link async href="external/external.min.css" rel="stylesheet">
@@ -322,19 +330,19 @@
 
 		    <div class="container-fluid">
 		    <div class="row">
-			<div class="col" style="width:15%; padding:0 3 0 3;">
+			<div class="col-2" style="width:15%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
 		                  onclick="wepsim_dialog_current_state();"><c><span class="hidden-xs">State</span><span class="visible-xs">St.</span></c></button>
 			</div>
-			<div class="col" style="width:27%; padding:0 3 0 3;">
+			<div class="col-3" style="width:27%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all"
 		                  style="border-width:1 1 1 1px;"
                                   data-toggle="modal" data-target="#confighw"><c><span class="hidden-xs">Configuration</span><span class="visible-xs">Cfg.</span></c></button>
 			</div>
-			<div class="col" style="width:40%; padding:0 3 0 3; margin: 7 0 0 0">
-                          <select name="select5a" id="select5a" class="custom-select"
-				  data-role="none"
+			<div class="col-5" style="width:40%; padding:0 3 0 3; margin: 7 0 0 0">
+                          <select name="select5a" id="select5a" class="custom-select col-5"
+				  data-role="none" style="width:100%"
                                   onchange="var val = this.value;
 				            $('#tab' + val).trigger('click');
 				            if ('11' == val)
@@ -354,7 +362,7 @@
 				  </optgroup>
 			  </select>
 			</div>
-			<div class="col" style="width:18%; padding:0 3 0 3;">
+			<div class="col-2" style="width:18%; padding:0 3 0 3;">
 		          <button class="btn btn-secondary ui-btn ui-shadow ui-corner-all ui-btn-icon-left ui-icon-refresh"
 		                  style="border-width:1 0 1 2px;"
                                   onclick="var val = $('#select5a').val();

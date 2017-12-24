@@ -412,14 +412,19 @@
             }
 
             var o1_rf = "" ;
+            var o1_rn = "" ;
 	    for (var index=0; index < sim_states['BR'].length; index++)
             {
+                 if (index < 10)
+                      o1_rn = "&nbsp;R" + index ;
+                 else o1_rn = "R" + index ;
+
 		 o1_rf += "<div class='col' style='padding:0 2px 0 2px !important; margin:1px 5px 1px 2px;'>" +
                           "<button type='button' class='btn btn-outline-primary no-text-shadow' " + 
 			  "        style='margin:1px 5px 1px 2px; padding:0 0 0 0; outline:none; box-shadow:none; transform:translate3d(0,0,0);' " +
                           "        data-toggle='popover-up' data-popover-content='" + index + "' data-container='body' " +
                           "        id='rf" + index + "'>" +
-                          "  <span id='name_RF" + index + "' style='float:center; padding:0 0 0 0'>R" + index + "</span>" +
+                          "  <span id='name_RF" + index + "' style='float:center; padding:0 0 0 0'>" + o1_rn + "</span>" +
                           "  <span class='badge badge-secondary' style='background-color:#CEECF5; color:black;' id='tbl_RF"  + index + "'>" +
                           (get_value(sim_states['BR'][index]) >>> 0).toString(get_cfg('RF_display_format')).toUpperCase() +
                           "  </span>" +
@@ -485,16 +490,23 @@
         {
             var SIMWARE = get_simware() ;
 
+            var br_value = "" ;
 	    for (var index=0; index < sim_states['BR'].length; index++)
             {
-                 var br_value = "R" + index;
-	         if ('logical' == get_cfg('RF_display_name'))
-		     if (typeof SIMWARE['registers'][index] != "undefined")
+                 if (index < 10)
+                      br_value = "&nbsp;R" + index ;
+                 else br_value = "R" + index ;
+
+	         if ('logical' == get_cfg('RF_display_name')) {
+		     if (typeof SIMWARE['registers'][index] != "undefined") {
 		         br_value = SIMWARE['registers'][index] ;
+                     }
+                 }
 
 		 var obj = document.getElementById("name_RF" + index);
-		 if (obj != null)
+		 if (obj != null) {
 		     obj.innerHTML = br_value ;
+                 }
 	    }
         }
 
