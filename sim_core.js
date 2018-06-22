@@ -42,6 +42,7 @@
 
             // 0.- to register the default Elemental Processor
             simhw_add(ep_def) ;
+            simhw_add(ep_d3f) ; // POC
 
             // 1.- to check if default behaviors are ok
             check_behavior();

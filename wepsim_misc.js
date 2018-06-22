@@ -360,5 +360,10 @@
 	  if ('wepsim' == optValue) {
               wepsim_activehw(0) ;
 	  }
+
+	  // POC
+	  if ('wepsim2' == optValue) {
+              wepsim_activehw(1) ;
+	  }
     }
 

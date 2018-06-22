@@ -51,3 +51,16 @@
                        events:              ep_events
 	             } ;
 
+        // POC
+        var ep_d3f = {
+                       sim_name:            "Elemental Processor (2)",
+                       sim_img_processor:   "sim_hw_ep/cpu6.svg",
+                       sim_img_controlunit: "sim_hw_ep/controlunit6.svg",
+                       sim_img_cpu:         "sim_hw_ep/cpu6.svg",
+                       components:          ep_components,
+                       states:              ep_states,
+                       signals:             ep_signals,
+                       behaviors:           ep_behaviors,
+                       events:              ep_events
+	             } ;
+
