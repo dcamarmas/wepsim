@@ -38,7 +38,7 @@
 		    // html holder
 		    var o1 = "<div class='container-fluid m-0 p-2'>" +
                              "<div class='row'>" +
-                             "   <div class='col' id='eltos_cpu_a' style='padding:0 5 0 0;'>" +
+                             "   <div class='col bg-light' id='eltos_cpu_a' style='padding:0 5 0 0;'>" +
                              "       <object id='svg_p'" +
                              "               title='processor'" +
                              "               data=''" +
@@ -47,7 +47,7 @@
                              "           Your browser doesn't support SVG" +
                              "       </object>" +
                              "   </div>" +
-                             "   <div class='col' id='eltos_cpu_b' style='padding:0 5 0 5;'>" +
+                             "   <div class='col bg-light' id='eltos_cpu_b' style='padding:0 5 0 5;'>" +
                              "       <object id='svg_cu'" +
                              "               title='control unit'" +
                              "               data=''" +

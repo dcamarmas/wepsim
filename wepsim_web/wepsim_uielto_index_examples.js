@@ -128,7 +128,7 @@
      	       t_index   = (m+1).toString().padStart(2, ' ').replace(/ /g, '&nbsp;') ;
 
      	        if (fmt_toggle === "")
-     	            fmt_toggle  = "bg-light" ;
+     	            fmt_toggle  = "bg-secondary-bg" ;
      	       else fmt_toggle  = "" ;
      	        if (m % 2 == 0)
                          w100_toggle = "collapse7 show" ;

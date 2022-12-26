@@ -124,7 +124,7 @@
 
      		// related row
      	        if  (fmt_toggle === "")
-     	             fmt_toggle = "bg-light" ;
+     	             fmt_toggle = "bg-secondary-bg" ;
      	        else fmt_toggle = "" ;
 
      	        e_class_1 = "                " + e_u_class + " " + fmt_toggle ;

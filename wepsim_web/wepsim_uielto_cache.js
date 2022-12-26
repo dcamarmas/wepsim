@@ -181,7 +181,7 @@
 	    // cfg
             o = "<div class='accordion-item'>" +
                 "  <h2 class='accordion-header' id='cm-cfg'>" +
-                "    <button class='accordion-button p-1 fs-5 collapsed bg-light' type='button' " +
+                "    <button class='accordion-button p-1 fs-5 collapsed bg-secondary-bg' type='button' " +
                 "            data-bs-toggle='collapse' data-bs-target='#cm-cfg-collapse-" + level + "' " +
                 "            aria-expanded='false' " +
                 "            aria-controls='cm-cfg-collapse'>Configuration</button>" +
@@ -242,7 +242,7 @@
 	    // content
             o = "<div class='accordion-item'>" +
                 "  <h2 class='accordion-header' id='cm-cnt-" + level + "'>" +
-                "    <button class='accordion-button p-1 fs-5 collapsed bg-light' type='button' " +
+                "    <button class='accordion-button p-1 fs-5 collapsed bg-secondary-bg' type='button' " +
                 "            data-bs-toggle='collapse' data-bs-target='#cm-cnt-collapse-" + level + "' " +
                 "            aria-expanded='false' aria-controls='cm-cnt-collapse'>Sets & Tags</button>" +
                 "  </h2>" +

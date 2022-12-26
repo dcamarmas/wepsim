@@ -198,7 +198,7 @@
                                    "simcore_ga('help', 'help.index', 'help.index." + m + "');" ;
 
     	        if (fmt_toggle === "")
-    	            fmt_toggle = "bg-light" ;
+    	            fmt_toggle = "bg-secondary-bg" ;
     	       else fmt_toggle = "" ;
 
     	        if (m % 2 == 0)

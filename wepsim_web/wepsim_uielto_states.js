@@ -284,7 +284,7 @@
                  it = t.getFullYear() + '-' + (t.getMonth()+1) + '-' + t.getDate() + '-' +
                       t.getHours()    + '-' + t.getMinutes()   + '-' + t.getSeconds() + '-' + t.getMilliseconds() ;
 
-                 tt = '<div id="popover-content-' + it + '" class="d-none bg-light">' +
+                 tt = '<div id="popover-content-' + it + '" class="d-none bg-secondary-bg">' +
                       ws_info.state_history[i].title + '<br>' +
                       '<b>was inserted at:</b><br>' +
                       'Date: ' + t.getFullYear() + '-' + (t.getMonth()+1) + '-' + t.getDate() + '<br>' +

@@ -46,7 +46,7 @@
 		        "     style='height:6vh; min-height:30px;'" +
 		        "     onclick=\"$('#img_select1').attr('src',        'images/stop/stop_" + elto + ".gif');" +
 		        "               $('#img_select1').attr('class',      '" + ws_info.breakpoint_icon_list[elto].addclass + "');" +
-		        "               $('#img_select1').attr('data-theme', '');" +
+		        "               $('#img_select1').attr('data-bs-theme', '');" +
 		        "	        set_cfg('ICON_theme','" + elto + "'); save_cfg();" +
                         "               wepsim_popover_hide('breakpointicon1');" +
                         "               wepsim_uicfg_apply();\">" ;
