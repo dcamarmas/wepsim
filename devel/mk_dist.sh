@@ -27,19 +27,67 @@ echo ""
 echo "  WepSIM packer"
 echo " ---------------"
 echo ""
-if [ $# -gt 0 ]; then
-     set -x
-fi
 
-# install dependencies
-echo "  Requirements:"
-echo "  * terser jq jshint"
+
+# arguments
+while getopts 'vdh' opt; do
+  case "$opt" in
+    v)
+      echo "  getopts: processing verbose..."
+      echo ""
+      set -x
+      ;;
+
+    d)
+      echo "  Please install first:"
+      echo "   sudo apt-get install jq"
+      echo ""
+      echo "   npm i terser jshint"
+      echo "   npm i yargs clear inquirer fuzzy commander async"
+      echo "   npm i inquirer-command-prompt inquirer-autocomplete-prompt"
+      echo "   npm i rollup @rollup/plugin-node-resolve"
+      echo ""
+      echo "   npm i codemirror @codemirror/lang-javascript"
+      echo "   npm i codemirror @codemirror/view";
+      echo "   npm i codemirror @codemirror/state";
+      echo "   npm i codemirror @codemirror/language";
+      echo ""
+      exit
+      ;;
+
+    ?|h)
+      echo "  Usage: $(basename $0) [-v] [-d]"
+      echo ""
+      exit 1
+      ;;
+  esac
+done
+shift "$(($OPTIND -1))"
+
+
+# install npm dependencies
+echo "  Step for npm install/update:"
+echo "  * terser jshint"
 echo "  * yargs clear inquirer fuzzy commander async"
 echo "  * inquirer-command-prompt inquirer-autocomplete-prompt"
+echo "  * rollup @rollup/plugin-node-resolve"
 npm install
+echo "  Done."
+echo ""
+
+
+# pre-bundle
+echo "  Step for rollup:"
+echo "  * codemirror6"
+node_modules/.bin/rollup -c external/codemirror6/rollup.config.mjs
+terser -o external/codemirror6/min.codemirror.js external/codemirror6/codemirror.bundle.js
+rm -fr external/codemirror6/codemirror.bundle.js
+echo "  Done."
+echo ""
+
 
 # skeleton
-echo "  Packing:"
+echo "  Step for packing:"
 echo "  * ws_dist"
                     mkdir -p ws_dist
                     touch    ws_dist/index.html
@@ -64,6 +112,7 @@ cat sim_core/sim_cfg.js \
     sim_core/sim_core_rest.js \
     sim_core/sim_core_notify.js \
     sim_core/sim_core_values.js \
+    sim_core/sim_core_decode.js \
     sim_core/sim_adt_ctrlmemory.js \
     sim_core/sim_adt_mainmemory.js \
     sim_core/sim_adt_cachememory.js \
@@ -90,12 +139,30 @@ cat sim_core/sim_cfg.js \
     sim_hw/sim_hw_poc/sim_hw_scr.js \
     sim_hw/sim_hw_poc/sim_hw_l3d.js \
     sim_hw/sim_hw_poc/sim_hw_ldm.js \
+    sim_hw/sim_hw_rv/sim_rv.js \
+    sim_hw/sim_hw_rv/sim_hw_board.js \
+    sim_hw/sim_hw_rv/sim_hw_cpu.js \
+    sim_hw/sim_hw_rv/sim_hw_mem.js \
     \
-    sim_sw/sim_decode.js \
-    sim_sw/sim_seg.js \
-    sim_sw/sim_lang.js \
-    sim_sw/sim_lang_firm.js \
-    sim_sw/sim_lang_asm.js > ws_dist/sim_all.js
+    sim_sw/firmware/lexical.js \
+    sim_sw/firmware/firm_mcode.js \
+    sim_sw/firmware/firm_begin.js \
+    sim_sw/firmware/firm_pseudoinstructions.js \
+    sim_sw/firmware/firm_registers.js \
+    sim_sw/firmware/firm_fields_v1.js \
+    sim_sw/firmware/firm_fields_v2.js \
+    sim_sw/firmware/firm_instruction.js \
+    sim_sw/firmware/creator2native.js \
+    sim_sw/firmware.js \
+    sim_sw/assembly/lexical.js \
+    sim_sw/assembly/memory_segments.js \
+    sim_sw/assembly/directives.js \
+    sim_sw/assembly/datatypes.js \
+    sim_sw/assembly/asm_v1.js \
+    sim_sw/assembly/asm_v2.js \
+    sim_sw/assembly/asm_ng.js \
+    sim_sw/assembly/asm_v3.js \
+    sim_sw/assembly.js > ws_dist/sim_all.js
 terser -o ws_dist/min.sim_all.js ws_dist/sim_all.js
 rm -fr ws_dist/sim_all.js
 
@@ -170,6 +237,7 @@ cat wepsim_web/wepsim_uielto.js \
     wepsim_web/wepsim_uielto_bin_mc.js \
     wepsim_web/wepsim_uielto_dbg_asm.js \
     wepsim_web/wepsim_uielto_bin_asm.js \
+    wepsim_web/wepsim_uielto_flash_asm.js \
     wepsim_web/wepsim_uielto_cpusvg.js \
     wepsim_web/wepsim_uielto_about.js \
     wepsim_web/wepsim_uielto_segments.js \
@@ -281,10 +349,17 @@ rm -fr ws_dist/external.js
 
 echo "  * ws_dist/min.external.css"
 cat external/bootstrap/bootstrap.min.css \
-    external/bootstrap-theme.min.css \
-    external/dark-mode.css \
     external/codemirror/codemirror.css \
     external/codemirror/theme/blackboard.css \
+    external/codemirror/theme/eclipse.css \
+    external/codemirror/theme/cobalt.css \
+    external/codemirror/theme/idea.css \
+    external/codemirror/theme/the-matrix.css \
+    external/codemirror/theme/neat.css \
+    external/codemirror/theme/abbott.css \
+    external/codemirror/theme/mdn-like.css \
+    external/codemirror/theme/duotone-light.css \
+    external/codemirror/theme/erlang-dark.css \
     external/codemirror/addon/fold/foldgutter.css \
     external/codemirror/addon/hint/show-hint.css \
     external/codemirror/addon/dialog/dialog.css \
@@ -306,41 +381,41 @@ cp    -a external/cordova.js            ws_dist/external/cordova.js
 
 ### default available examples
 # MIPS
-DEFAULT_EXAMPLE_SET="examples/examples_set/mips/es_ep.json examples/examples_set/mips/es_poc.json examples/examples_set/mips/es_ep_native.json examples/examples_set/mips/es_poc_native.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/mips/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/mips/es_ep.json repo/examples_set/mips/es_poc.json repo/examples_set/mips/es_ep_native.json repo/examples_set/mips/es_poc_native.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/mips/default.json
 # MIPS instructive
-DEFAULT_EXAMPLE_SET="examples/examples_set/mips/es_ep_instructive.json examples/examples_set/mips/es_poc_instructive.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/mips/default_instructive.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/mips/es_ep_instructive.json repo/examples_set/mips/es_poc_instructive.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/mips/default_instructive.json
 # RV32
-DEFAULT_EXAMPLE_SET="examples/examples_set/rv32/es_ep.json examples/examples_set/rv32/es_poc.json examples/examples_set/rv32/es_ep_native.json examples/examples_set/rv32/es_poc_native.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/rv32/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/rv32/es_ep.json repo/examples_set/rv32/es_poc.json repo/examples_set/rv32/es_ep_native.json repo/examples_set/rv32/es_poc_native.json repo/examples_set/rv32/es_rv.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/rv32/default.json
 # RV32 instructive
-DEFAULT_EXAMPLE_SET="examples/examples_set/rv32/es_ep_instructive.json examples/examples_set/rv32/es_poc_instructive.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/rv32/default_instructive.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/rv32/es_ep_instructive.json repo/examples_set/rv32/es_poc_instructive.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/rv32/default_instructive.json
 # ARM
-DEFAULT_EXAMPLE_SET="examples/examples_set/arm/es_ep.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/arm/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/arm/es_ep.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/arm/default.json
 # Z80
-DEFAULT_EXAMPLE_SET="examples/examples_set/z80/es_ep.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/z80/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/z80/es_ep.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/z80/default.json
 # OpenCourseWare
-DEFAULT_EXAMPLE_SET="examples/examples_set/mips_ocw/es_ep.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/mips_ocw/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/mips_ocw/es_ep.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/mips_ocw/default.json
 # Aula Global (UC3M)
-DEFAULT_EXAMPLE_SET="examples/examples_set/rv32_ag/es_ep.json examples/examples_set/rv32_ag/es_poc.json"
-jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > examples/examples_set/rv32_ag/default.json
+DEFAULT_EXAMPLE_SET="repo/examples_set/rv32_ag/es_ep.json repo/examples_set/rv32_ag/es_poc.json"
+jq 'reduce inputs as $i (.; . += $i)' $DEFAULT_EXAMPLE_SET > repo/examples_set/rv32_ag/default.json
 
 #  examples
-echo "  * ws_dist/examples/..."
-cp -a examples  ws_dist/
+echo "  * ws_dist/repo/..."
+cp -a repo    ws_dist/
 
 #  docs
 echo "  * ws_dist/docs/..."
-cp -a docs      ws_dist/
+cp -a docs    ws_dist/
 
 #  images
 echo "  * ws_dist/images/..."
-cp -a images    ws_dist/
+cp -a images  ws_dist/
 
 #  user interface
 echo "  * ws_dist/*.html"
@@ -356,8 +431,8 @@ cp wepsim_nodejs/wepsim.sh        ws_dist/
 chmod a+x ws_dist/*.sh
 
 #  json: update processors
-./ws_dist/wepsim.sh -a export-hardware -m ep  > ws_dist/examples/hardware/ep/hw_def.json
-./ws_dist/wepsim.sh -a export-hardware -m poc > ws_dist/examples/hardware/poc/hw_def.json
+./ws_dist/wepsim.sh -a export-hardware -m ep  > ws_dist/repo/hardware/ep/hw_def.json
+./ws_dist/wepsim.sh -a export-hardware -m poc > ws_dist/repo/hardware/poc/hw_def.json
 
 # the end
 echo ""

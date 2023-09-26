@@ -147,6 +147,9 @@
         {
             var sim_components = simhw_sim_components() ;
 
+            if (typeof sim_components[component_name].details_ui === "undefined") {
+                return simcore_do_nothing_handler ;
+            }
             if (typeof sim_components[component_name].details_ui[detail_id][action_name] === "undefined") {
                 return simcore_do_nothing_handler ;
             }
@@ -267,8 +270,8 @@
 	        var SIMWARE = get_simware();
 
                 if (
-                     (! ((typeof curr_segments['.ktext'] != "undefined") && (SIMWARE.labels2.kmain)) ) &&
-                     (! ((typeof curr_segments['.text']  != "undefined") && (SIMWARE.labels2.main))   )
+                     (! ((typeof curr_segments['.ktext'] != "undefined") && (SIMWARE.labels_asm.kmain)) ) &&
+                     (! ((typeof curr_segments['.text']  != "undefined") && (SIMWARE.labels_asm.main))   )
                 )
                 {
 		     ret.msg = "labels 'kmain' (in .ktext) or 'main' (in .text) do not exist!" ;
@@ -393,14 +396,14 @@
             }
 
 	    // CPU registers initial values
-	    if ((typeof curr_segments['.ktext'] !== "undefined") && (SIMWARE.labels2.kmain))
+	    if ((typeof curr_segments['.ktext'] !== "undefined") && (SIMWARE.labels_asm.kmain))
 	    {
-	         set_value(pc_state, parseInt(SIMWARE.labels2.kmain)) ;
+	         set_value(pc_state, parseInt(SIMWARE.labels_asm.kmain)) ;
 	         show_asmdbg_pc() ;
 	    }
-	    else if ((typeof curr_segments['.text'] !== "undefined") && (SIMWARE.labels2.main))
+	    else if ((typeof curr_segments['.text'] !== "undefined") && (SIMWARE.labels_asm.main))
 	    {
-	         set_value(pc_state, parseInt(SIMWARE.labels2.main)) ;
+	         set_value(pc_state, parseInt(SIMWARE.labels_asm.main)) ;
 	         show_asmdbg_pc() ;
 	    }
 

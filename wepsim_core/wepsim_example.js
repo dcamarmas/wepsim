@@ -40,6 +40,8 @@
        var jobj = null ;
 
        // try to load each one
+       ws_info.examples = [] ;
+
        for (var i=0; i<ws_info.example_set.length; i++)
        {
             if (ws_info.example_set[i].aliases.includes(e_name) == false) {
@@ -194,6 +196,9 @@
                                 wsweb_change_workspace_microcode();
                                 return ;
 			    }
+
+                           // update register view (just in case firmware is updated)
+                           wepsim_show_rf_names() ;
 
                            // chain to next task
                            if (true === chain_next_step)

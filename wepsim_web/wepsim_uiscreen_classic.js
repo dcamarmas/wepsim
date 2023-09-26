@@ -40,7 +40,6 @@
 	            super.render() ;
 
                     // render current element
-                    this.extended_ui = true ;
 		    this.render_skel() ;
 		    this.render_populate() ;
 
@@ -111,12 +110,10 @@
 
 	      render_populate_classic_toolbars ( )
 	      {
-                   var o1 = '' ;
+                   var o1  = '' ;
                    var ui1 = '' ;
 
-                   if (this.extended_ui)
-		       ui1 = '[,btn_examples,btn_help,btndd_mode,]' ;
-		  else ui1 = '[,btn_examples,btn_help,]' ;
+		   ui1 += '[,btn_examples,btn_help,btndd_mode,]' ;
 
                    o1 += '<div class="col-sm-auto p-1 me-1 my-1">' +
 			 '<ws-toolbar components="[,switch_microcode,switch_assembly,]"></ws-toolbar>' +
@@ -125,7 +122,7 @@
 			 '<div class="w-100 d-block d-sm-none"></div>' +
 			 '' +
 			 '<div id="slider_cpucu" ' +
-                         '     class="col-sm p-0 collapse show multi-collapse-2 user_microcode">' +
+                         '     class="col-sm p-0 collapse show multi-collapse-2 wsx_microcode">' +
 			 '<ws-toolbar components="slider_cpucu"></ws-toolbar>' +
 			 '</div>' +
 			 '' +
@@ -151,21 +148,17 @@
 
 	      render_populate_classic_details ( )
 	      {
-                   var ui1 = '' ;
-
-                   if (this.extended_ui)
-		       ui1 = 'mp,con,all,mc,io,cpu,mpcfg,iocfg,iol3d,ioldm,ed_mc,ed_mp,cm,cmcfg' ;
-		  else ui1 = 'mp,con,all,mc,io,cpu,mpcfg,iocfg,iol3d,ioldm,ed_mc,ed_mp' ;
+		   var ui1 = 'mp,con,all,mc,io,cpu,mpcfg,iocfg,iol3d,ioldm,ed_mc,ed_mp,cm,cmcfg' ;
 
 		   var o1 = '    <div class="row ps-2 pe-3">' +
 			    '	 <ws-executionbar name="exebar1" class="btn-toolbar btn-block"' +
-			    '			  components="btn_reset,btn_emins,btn_eins,btn_run"' +
+			    '			  components="btn_reset,btn_emins,btn_eins,btn_rnf"' +
 			    '			  icons="up" role="toolbar"></ws-executionbar>' +
 			    '	 </div>' +
 			    '' +
 			    '	 <div class="row ps-2 pe-3 pt-1">' +
 			    '	 <div class="btn-toolbar btn-block" role="toolbar">' +
-			    '	      <button class="btn btn-light shadow-sm col py-0 mx-1 border border-secondary"' +
+			    '	      <button class="btn bg-body-tertiary shadow-sm col py-0 mx-1 border border-secondary"' +
 			    '		      style="flex-grow:1;"' +
 			    '		      data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"' +
 			    '		      title="This button opens the \'state management\' dialog: it shows the current state, saves the current state, and shows the differences between two states."' +
@@ -209,26 +202,25 @@
 			 '' +
 			 '	      <div class="btn-group me-2" role="group"   aria-label="Toolbar load and save buttons">' +
                          '            <div class="dropdown">' +
-                         '               <button class="btn btn-secondary dropdown-toggle shadow-sm col-auto text-dark border border-secondary"' +
-                         '                 style="background-color:#D4DB17; flex-grow:1;" '+
+                         '               <button class="btn dropdown-toggle shadow-sm col-auto border border-secondary bg-help"' +
+                         '                 style="flex-grow:1;" '+
                          '                       type="button" id="ddownAsmHelp1" ' +
                          '                       data-bs-toggle="dropdown" aria-expanded="false">' +
                          '               <em class="fas fa-info-circle"></em>&nbsp;' +
                          '               <strong><span data-langkey="Help">Help</span></strong></button>' +
-                         '                 <ul class="dropdown-menu" ' +
-                         '                     style="background-color: #D4DB17"' +
+                         '                 <ul class="dropdown-menu bg-help" ' +
                          '                     aria-labelledby="ddownAsmHelp1">' +
-                         '                   <li><button class="btn dropdown-item" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" ' +
                          '                               onclick="wsweb_dialog_open(\'help\');' +
                          '                                wepsim_help_set(\'relative\', ' +
                          '                                                \'simulator#help_assembly_format\');' +
                          '                                return false;"' +
                          '                   ><strong><span data-langkey="Assembly format">Assembly format</span></strong></button></li>' +
-                         '                   <li><button class="btn dropdown-item" type="button" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" type="button" ' +
                          '                               data-bs-toggle="offcanvas" data-bs-target="#offcvs1" ' +
                          '                               aria-controls="offcvs1"' +
                          '                   ><strong><span data-langkey="Instruction summary">Instruction summary</span></strong></button></li>' +
-                         '                   <li><button class="btn dropdown-item" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" ' +
                          '                               onclick="wsweb_dialog_open(\'help\');' +
                          '                                        return false;"' +
                          '                   ><strong><span data-langkey="Help index">Help index</span></strong></button></li>' +
@@ -282,8 +274,7 @@
 			 '' +
 /*
 			 '	      <div class="btn-group me-2 my-1" role="group"   aria-label="Toolbar load and save buttons">' +
-			 '		    <button style="background-color: #D4DB17"' +
-			 '			    class="btn btn-light shadow-sm col-auto"' +
+			 '		    <button class="btn shadow-sm col-auto bg-help"' +
 			 '			    onclick="wsweb_dialog_open(\'help\');' +
 			 '				     wepsim_help_set(\'relative\', \'simulator#help_firmware_format\');' +
 			 '				     return false;"' +
@@ -293,22 +284,21 @@
 */
 			 '	      <div class="btn-group me-2" role="group"   aria-label="Toolbar load and save buttons">' +
                          '            <div class="dropdown">' +
-                         '               <button class="btn btn-secondary dropdown-toggle col-auto text-dark border border-secondary"' +
-                         '                       style="background-color:#D4DB17; flex-grow:1;" ' +
+                         '               <button class="btn dropdown-toggle col-auto border border-secondary bg-help"' +
+                         '                       style="flex-grow:1;" ' +
                          '                       type="button" id="ddownMicroHelp1" ' +
                          '                       data-bs-toggle="dropdown" aria-expanded="false">' +
                          '               <em class="fas fa-info-circle"></em>&nbsp;' +
                          '               <strong><span data-langkey="Help">Help</span></strong></button>' +
-                         '                 <ul class="dropdown-menu" ' +
-                         '                     style="background-color: #D4DB17"' +
+                         '                 <ul class="dropdown-menu bg-help" ' +
                          '                     aria-labelledby="ddownMicroHelp1">' +
-                         '                   <li><button class="btn dropdown-item" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" ' +
                          '                               onclick="wsweb_dialog_open(\'help\');' +
                          '                                wepsim_help_set(\'relative\', ' +
                          '                                                \'simulator#help_firmware_format\');' +
                          '                                return false;"' +
                          '                   ><strong><span data-langkey="Firmware format">Firmware format</span></strong></button></li>' +
-                         '                   <li><button class="btn dropdown-item" type="button" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" type="button" ' +
                          '                               data-bs-toggle="offcanvas" data-bs-target="#offcvs2" ' +
                          '                               aria-controls="offcvs2"' +
                          '                               onclick="var offobj = null; ' +
@@ -318,7 +308,7 @@
                          '                                        wepsim_offcanvas_show(\'offcvs2\');' +
                          '                                        return false;"' +
                          '                   ><strong><span data-langkey="Hardware summary">Hardware summary</span></strong></button></li>' +
-                         '                   <li><button class="btn dropdown-item" type="button" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" type="button" ' +
                          '                               data-bs-toggle="offcanvas" data-bs-target="#offcvs2" ' +
                          '                               aria-controls="offcvs2"' +
                          '                               onclick="var offobj = null; ' +
@@ -328,7 +318,7 @@
                          '                                        wepsim_offcanvas_show(\'offcvs2\');' +
                          '                                        return false;"' +
                          '                   ><strong><span data-langkey="Signals summary">Signals summary</span></strong></button></li>' +
-                         '                   <li><button class="btn dropdown-item" ' +
+                         '                   <li><button class="btn dropdown-item bg-help" ' +
                          '                               onclick="wsweb_dialog_open(\'help\');' +
                          '                                        return false;"' +
                          '                   ><strong><span data-langkey="Help index">Help index</span></strong></button></li>' +
@@ -374,7 +364,7 @@
 	        '        data-bs-dismiss="offcanvas" aria-label="Close"></button>' ;
         }
 
-        o = '  <div class="offcanvas-header bg-secondary bg-opacity-25 border p-2">' +
+        o = '  <div class="offcanvas-header bg-secondary bg-opacity-25 border p-2 mt-5">' +
             '    <h5 class="offcanvas-title lh-1" ' +
             '        onclick="wepsim_offcanvas_toggleHV(\'' + offcanvas_id + '\');"' +
             '        id="' + offcanvas_id + 'Label">' +
@@ -426,7 +416,7 @@
 
 	      var seg_idiom = get_cfg('ws_idiom') ;
 	      var ahw       = simhw_active() ;
-	      var helpurl   = 'examples/hardware/' + ahw.sim_short_name + '/help/signals-' + seg_idiom + '.html' ;
+	      var helpurl   = 'repo/hardware/' + ahw.sim_short_name + '/help/signals-' + seg_idiom + '.html' ;
 	      resolve_html_url('#' + offcanvas_id + 'help', helpurl, '#', function(){}) ;
 	 }
 	 else if ("hardware_summary" == content_name)

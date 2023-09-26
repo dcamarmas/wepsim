@@ -38,6 +38,23 @@
             return false ;
 	}
 
+	// Next two functions taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+	function base_escapeRegExp ( string )
+	{
+	    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+	}
+
+	function base_replaceAll ( base_str, match, replacement )
+	{
+	    // ES12+
+	    if (typeof base_str.replaceAll != "undefined") {
+	        return base_str.replaceAll(match, replacement) ;
+	    }
+
+	    // older javascript engines
+	    return base_str.replace(new RegExp(base_escapeRegExp(match), 'g'), ()=>replacement);
+	}
+
 
         /*
          *  checking & updating
@@ -296,15 +313,27 @@
                }
 
 	       var ma = SIMWARE['firmware'][i]["mc-start"] ;
-	       var co = parseInt(SIMWARE['firmware'][i]["co"], 2) ;
-               var cop = 0 ;
-	       if (typeof SIMWARE['firmware'][i]["cop"] != "undefined") {
-	           cop = parseInt(SIMWARE['firmware'][i]["cop"], 2) ;
-               }
 
-               var rom_addr = 64*co + cop ;
+           if (SIMWARE.version == 2) {
+               var oc = parseInt(SIMWARE['firmware'][i]["oc"], 2) ;
+                var eoc = 0 ;
+                if (typeof SIMWARE['firmware'][i]["eoc"] != "undefined") {
+                    eoc = parseInt(SIMWARE['firmware'][i]["eoc"], 2) ;
+                    }
+
+                var rom_addr = 64*oc + eoc ;
+            } else {
+                var co = parseInt(SIMWARE['firmware'][i]["co"], 2) ;
+                var cop = 0 ;
+                if (typeof SIMWARE['firmware'][i]["cop"] != "undefined") {
+                    cop = parseInt(SIMWARE['firmware'][i]["cop"], 2) ;
+                    }
+
+                var rom_addr = 64*co + cop ;
+            }
+
 	       simhw_internalState_set('ROM', rom_addr, ma) ;
-               SIMWARE['cihash'][rom_addr] = SIMWARE['firmware'][i]['signature'] ;
+               SIMWARE['hash_ci'][rom_addr] = SIMWARE['firmware'][i]['signature'] ;
 	    }
 
 	    // 4.- load the MP from SIMWARE['mp']

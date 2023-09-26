@@ -44,7 +44,6 @@
             if (typeof melto.breakpoint  === "undefined")  melto.breakpoint  = false ;
             if (typeof melto.notify      === "undefined")  melto.notify      = [] ;
             if (typeof melto.is_assembly === "undefined")  melto.is_assembly = false ;
-            if (typeof melto.bgcolor     === "undefined")  melto.bgcolor     = '' ;
             if (typeof melto.source      === "undefined")  melto.source      = '' ;
 
             // modify computed attributes by comments "operators"
@@ -128,9 +127,17 @@
             }
 
             // escape html end attribute char
-            if (typeof src == "string") {
-                src = src.replace(/'/g, '')
-                         .replace(/"/g, '') ;
+            if (typeof src == "string")
+	    {
+                src = src.replace(/'/g, '\u{0027}')
+                         .replace(/"/g, '\u{0022}')
+                    //   .replace(/\n/, '&lt;LF&gt;')
+                         .replace(/\n/, '\u{021A9}')
+                    //   .replace(/\r/, '&lt;CR&gt;')
+                         .replace(/\r/, '&#9226;')
+                    //   .replace(/\t/, '&lt;TAB&gt;')
+                         .replace(/\t/, '&rarrb;')
+                         .replace(/\f/, '&lt;FF&gt;') ;
             }
 
 	    return src ;

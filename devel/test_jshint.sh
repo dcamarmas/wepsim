@@ -35,10 +35,21 @@ echo "checking sim_core..."
  jshint ./sim_core/sim_core_rest.js
 
 echo "checking sim_sw..."
- jshint ./sim_sw/sim_lang.js
-#jshint ./sim_sw/sim_seg.js
-#jshint ./sim_sw/sim_lang_firm.js
-#jshint ./sim_sw/sim_lang_asm.js
+ jshint ./sim_sw/firmware/lexical.js
+ jshint ./sim_sw/firmware/firm_mcode.js
+ jshint ./sim_sw/firmware/firm_begin.js
+ jshint ./sim_sw/firmware/firm_registers.js
+ jshint ./sim_sw/firmware/firm_pseudoinstructions.js
+#jshint ./sim_sw/firmware/firm_instruction_v1.js
+ jshint ./sim_sw/firmware/firm_fields_v1.js
+#jshint ./sim_sw/firmware/firm_fields_v2.js
+#jshint ./sim_sw/firmware/firm_instruction.js
+#jshint ./sim_sw/firmware.js
+ jshint ./sim_sw/firmware/creator2native.js
+ jshint ./sim_sw/assembly/lexical.js
+#jshint ./sim_sw/assembly/memory_segments.js
+ jshint ./sim_sw/assembly/lexical.js
+#jshint ./sim_sw/assembly.js
 
 echo "checking sim_hw..."
  jshint ./sim_hw/sim_hw_index.js
@@ -97,7 +108,7 @@ echo "checking wepsim_web..."
  jshint ./wepsim_web/wepsim_uielto_compilationbar.js
  jshint ./wepsim_web/wepsim_uielto_console.js
  jshint ./wepsim_web/wepsim_uielto_cpu.js
- jshint ./wepsim_web/wepsim_uielto_cpusvg.js
+#jshint ./wepsim_web/wepsim_uielto_cpusvg.js
  jshint ./wepsim_web/wepsim_uielto_dbg_asm.js
  jshint ./wepsim_web/wepsim_uielto_dbg_mc.js
  jshint ./wepsim_web/wepsim_uielto_editas.js

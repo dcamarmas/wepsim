@@ -25,6 +25,65 @@
 
         // numbers
 
+	//
+	// decimal2binary(number: integer, size_to_fit: integer ) ->
+	//    [
+	//       num_base2,
+	//       number of bits extra of missing for num_base2,
+	//       minimum number of bits to represent num_base2
+	//    ]
+	//
+
+	function decimal2binary ( number, size )
+	{
+		var num_base2        = number.toString(2) ;
+		var num_base2_length = num_base2.length ;
+
+		if (num_base2_length > WORD_LENGTH) {
+		    return [num_base2, size-num_base2_length, num_base2_length] ;
+		}
+
+		num_base2        = (number >>> 0).toString(2) ;
+		num_base2_length = num_base2.length ;
+		if (number >= 0) {
+		    return [num_base2, size-num_base2_length, num_base2_length] ;
+		}
+
+		num_base2        = "1" + num_base2.replace(/^[1]+/g, "") ;
+		num_base2_length = num_base2.length ;
+		if (num_base2_length > size) {
+		    return [num_base2, size-num_base2_length, num_base2_length] ;
+		}
+
+		num_base2 = "1".repeat(size - num_base2.length) + num_base2 ;
+		return [num_base2, size-num_base2.length, num_base2_length] ;
+	}
+
+	function float2binary ( f, size )
+	{
+		var buf   = new ArrayBuffer(8) ;
+		var float = new Float32Array(buf) ;
+		var uint  = new Uint32Array(buf) ;
+
+		float[0] = f ;
+		return decimal2binary(uint[0], size) ;
+	}
+
+	function float2decimal ( f )
+	{
+		var buf   = new ArrayBuffer(8) ;
+		var float = new Float32Array(buf) ;
+		var uint  = new Uint32Array(buf) ;
+
+		float[0] = f ;
+                return uint[0] ;
+	}
+
+	function float2hex ( f )
+	{
+                return float2decimal(f).toString(16) ;
+	}
+
         function hex2float ( hexvalue )
         {
 		var sign     = (hexvalue & 0x80000000) ? -1 : 1;
@@ -74,6 +133,35 @@
 	 *      9 -> +NaN (quiet)
 	 */
 	function float_class ( a )
+	{
+              var s = a & 0x80000000;
+                  s = s >> 31 ;
+              var e = a & 0x7F800000;
+                  e = e >> 23 ;
+              var m = a & 0x007FFFFF;
+
+	      let rd = 0 ;
+
+	      if (!m && !e) {
+		  rd = s ? 3 : 4 ;
+              }
+	      else if (!e) {
+		  rd = s ? 2 : 6 ;
+              }
+	      else if (!(e ^ 255)) {
+		  if (m)
+		      rd = s ? 8 : 9 ;
+		  else
+		      rd = s ? 0 : 7 ;
+              }
+	      else {
+		  rd = s ? 1 : 5 ;
+              }
+
+	      return rd ;
+	}
+
+	function float_class_power2 ( a )
 	{
               var s = a & 0x80000000;
                   s = s >> 31 ;

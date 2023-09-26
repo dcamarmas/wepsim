@@ -29,18 +29,14 @@
                 return ;
             }
 
-            if (typeof ga !== "undefined")
-            {
-                ga('send', 'event', category, action, label) ;
-            }
-
             if (typeof gtag !== "undefined")
             {
                 gtag('event',
-                     action,
+                     label,
                      {
-                        'event_category' : category,
-                        'event_label' : label
+                        'event_category': category,
+                        'event_action':   action,
+                        'event_label':    label
                      });
             }
         }

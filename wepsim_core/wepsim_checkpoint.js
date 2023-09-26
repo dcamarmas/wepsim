@@ -322,7 +322,7 @@
 
     function wepsim_checkpoint_loadExample ( tutorial_name )
     {
-	    var file_uri = 'examples/checkpoint/' + tutorial_name ;
+	    var file_uri = 'repo/checkpoint/' + tutorial_name ;
 
 	    // lambda (auxiliar) function
 	    var function_after_loaded = function (data_text)
@@ -403,7 +403,9 @@
 
     function wepsim_checkpoint_listCache ( id_listdiv )
     {
-            var o = '<span style="background-color:#FCFC00">&lt;<span data-langkey="Empty">Empty</span>&gt;</span>' ;
+            var o = '<span class="bg-warning text-dark bg-opacity-75">' +
+                    '&lt;<span data-langkey="Empty">Empty</span>&gt;' +
+                    '</span>' ;
 
             var obj_wsbackup = wepsim_checkpoint_backup_load() ;
 	    if (obj_wsbackup.length == 0) {
