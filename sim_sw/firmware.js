@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -60,7 +60,7 @@ function find_first_cocop ( context, curr_instruction, first_co, last_co )
                 // new initial co...
 		ret.label_co = j.toString(2).padStart(oc_length, "0") ;
 
-                // (1/3) check for free co-0000...
+                // (1/3) check for free co-00000...
 		if (typeof context.co_cop[ret.label_co] === "undefined")
                 {
 		    context.co_cop[ret.label_co]         = {} ;
@@ -91,7 +91,7 @@ function find_first_cocop ( context, curr_instruction, first_co, last_co )
 
                 // new initial co-cop...
                 first_cop = 0 ;
-                last_cop  = Math.pow(2, 4) - 1 ;
+                last_cop  = Math.pow(2, eoc_length) - 1 ;
 		for (k=first_cop; k<last_cop; k++)
 		{
 		     ret.label_cop = k.toString(2).padStart(eoc_length, "0") ;
@@ -116,6 +116,8 @@ function find_first_oceoc ( context, curr_instruction, first_oc, last_oc )
 {
            var k = 0 ;
            var m = 0 ;
+           var xr_info = simhw_sim_ctrlStates_get() ;
+	   var eoc_len = xr_info.ir.default_eltos.eoc.length ;
 
            var ret = {} ;
                ret.label_oc  = '' ;
@@ -169,10 +171,10 @@ function find_first_oceoc ( context, curr_instruction, first_oc, last_oc )
 
                 // new initial oc-eoc...
                 first_eoc = 0 ;
-                last_eoc  = Math.pow(2, 4) - 1 ;
+                last_eoc  = Math.pow(2, eoc_len) - 1 ;
 		for (k=first_eoc; k<last_eoc; k++)
 		{
-		     ret.label_eoc = k.toString(2).padStart(4, "0") ;
+		     ret.label_eoc = k.toString(2).padStart(eoc_len, "0") ;
 
                      if (        (context.oc_eoc[ret.label_oc].eoc === null) ||
                           (typeof context.oc_eoc[ret.label_oc].eoc === 'undefined') )
@@ -193,6 +195,7 @@ function find_first_oceoc ( context, curr_instruction, first_oc, last_oc )
 function loadFirmware (text)
 {
            var ret = {} ;
+           var i = 0 ;
 
            var     xr_info = simhw_sim_ctrlStates_get() ;
            var all_ones_co = "1".repeat(xr_info.ir.default_eltos.co.length) ;
@@ -200,7 +203,7 @@ function loadFirmware (text)
 
            var context = {} ;
 	   context.line           	= 1 ;
-	   context.error          	= null ;
+       //  context.error          	= null ;
 	   context.i              	= 0 ;
 	   context.contadorMC     	= 0 ;
 	   context.etiquetas      	= {} ;
@@ -217,30 +220,24 @@ function loadFirmware (text)
 	   context.pseudoInstructions	= [];
 	   context.stackRegister	= null ;
            context.comments             = [] ;
-           context.version              = 1 ;
+           context.metadata             = { version:1 } ;
 
-           var i = 0 ;
 
            frm_nextToken(context) ;
-           // optional: firmware_version: 2
-           if (frm_isToken(context, "firmware_version"))
+           //
+           // optional:
+           // *firmware {
+           //     version  = 2,
+           //     rel_mult = 2,
+           //     endian   = little
+           // }*
+           //
+           if (frm_isToken(context, "firmware"))
            {
-	       frm_nextToken(context);
-	       // match mandatory =
-	       if (! frm_isToken(context,"=")) {
-		     return frm_langError(context,
-				      i18n_get_TagFor('compiler', 'EQUAL NOT FOUND')) ;
-	       }
-
-	       frm_nextToken(context);
-	       // match mandatory FIRMWARE_VERSION
-               context.comments = [] ;
-	       context.version = frm_getToken(context) ;
-
-               frm_nextToken(context);
-               // match optional ,
-               if (frm_isToken(context,","))
-	           frm_nextToken(context);
+               ret = firm_metadata_read(context) ;
+	       if (ret.error != null) {
+	           return ret ;
+               }
            }
 
            // firmware (registers, instructions, etc.)
@@ -273,7 +270,7 @@ function loadFirmware (text)
                if (frm_isToken(context, "pseudoinstructions"))
                {
                    ret = firm_pseudoinstructions_read(context) ;
-	           if (typeof ret.error != "undefined") {
+	           if (ret.error != null) {
 	               return ret ;
                    }
 
@@ -342,7 +339,7 @@ function loadFirmware (text)
            }
 
 	   // RESOLVE: oc=111111... (111111... === "please, find one free 'oc' for me...")
-	   if (context.version == 2)
+	   if (context.metadata.version == 2)
            {
 		var ir_oc_length = 6 ;
 		if (typeof xr_info !== "undefined") {
@@ -439,8 +436,8 @@ function loadFirmware (text)
 				if (context.etiquetas[j] == context.labelsNotFound[i].nombre)
 				{
 				    context.instrucciones[context.labelsNotFound[i].instruction].microcode[context.labelsNotFound[i].cycle].MADDR = j;
-				    labelsFounded++;		
-				}	
+				    labelsFounded++;
+				}
 			}
 
 			if (labelsFounded == 0)
@@ -471,56 +468,59 @@ function loadFirmware (text)
 	   }
 	   eval(mk_native) ;
 
-	   if (context.version == 2) {
-		   // oc_eoc_hash
-			var fioc  = 0 ;
-			var fieoc = 0 ;
-			context.hash_oceoc = {} ;
-			for (var fi in context.instrucciones)
-			{
-				if (context.instrucciones[fi].name == "begin") {
-					continue ;
-				}
-
-				fioc  = context.instrucciones[fi].oc ;
-				if (typeof context.hash_oceoc[fioc] == "undefined") {
-					context.hash_oceoc[fioc] = {} ;
-				}
-
-				if (typeof context.instrucciones[fi].eoc == "undefined") {
-					context.hash_oceoc[fioc].witheoc = false ;
-					context.hash_oceoc[fioc].i       = context.instrucciones[fi] ;
-				} else {
-					fieoc = context.instrucciones[fi].eoc ;
-					context.hash_oceoc[fioc].witheoc = true ;
-					context.hash_oceoc[fioc][fieoc]  = context.instrucciones[fi] ;
-				}
+	   if (context.metadata.version == 2)
+           {
+	        // oc_eoc_hash
+		var fioc  = 0 ;
+		var fieoc = 0 ;
+		context.hash_oceoc = {} ;
+		for (var fi in context.instrucciones)
+		{
+			if (context.instrucciones[fi].name == "begin") {
+				continue ;
 			}
-	   } else {
-            // co_cop_hash
-			var fico  = 0 ;
-			var ficop = 0 ;
-			context.hash_cocop = {} ;
-			for (var fi in context.instrucciones)
-			{
-				if (context.instrucciones[fi].name == "begin") {
-					continue ;
-				}
 
-				fico  = context.instrucciones[fi].co ;
-				if (typeof context.hash_cocop[fico] == "undefined") {
-					context.hash_cocop[fico] = {} ;
-				}
-
-				if (typeof context.instrucciones[fi].cop == "undefined") {
-					context.hash_cocop[fico].withcop = false ;
-					context.hash_cocop[fico].i       = context.instrucciones[fi] ;
-				} else {
-					ficop = context.instrucciones[fi].cop ;
-					context.hash_cocop[fico].withcop = true ;
-					context.hash_cocop[fico][ficop]  = context.instrucciones[fi] ;
-				}
+			fioc  = context.instrucciones[fi].oc ;
+			if (typeof context.hash_oceoc[fioc] == "undefined") {
+				context.hash_oceoc[fioc] = {} ;
 			}
+
+			if (typeof context.instrucciones[fi].eoc == "undefined") {
+				context.hash_oceoc[fioc].witheoc = false ;
+				context.hash_oceoc[fioc].i       = context.instrucciones[fi] ;
+			} else {
+				fieoc = context.instrucciones[fi].eoc ;
+				context.hash_oceoc[fioc].witheoc = true ;
+				context.hash_oceoc[fioc][fieoc]  = context.instrucciones[fi] ;
+			}
+		}
+	   }
+           else
+           {
+		// co_cop_hash
+		var fico  = 0 ;
+		var ficop = 0 ;
+		context.hash_cocop = {} ;
+		for (var fi in context.instrucciones)
+		{
+			if (context.instrucciones[fi].name == "begin") {
+				continue ;
+			}
+
+			fico  = context.instrucciones[fi].co ;
+			if (typeof context.hash_cocop[fico] == "undefined") {
+				context.hash_cocop[fico] = {} ;
+			}
+
+			if (typeof context.instrucciones[fi].cop == "undefined") {
+				context.hash_cocop[fico].withcop = false ;
+				context.hash_cocop[fico].i       = context.instrucciones[fi] ;
+			} else {
+				ficop = context.instrucciones[fi].cop ;
+				context.hash_cocop[fico].withcop = true ;
+				context.hash_cocop[fico][ficop]  = context.instrucciones[fi] ;
+			}
+		}
 	   }
 
            // revlabels
@@ -531,21 +531,23 @@ function loadFirmware (text)
 
            // return results
            ret = {} ;
-           ret.error                = null ;
-	   ret.version              = context.version ;
-           ret.firmware             = context.instrucciones ;
-           ret.labels_firm          = context.etiquetas ;
-           ret.mp                   = {} ;
-           ret.seg                  = {} ;
-           ret.registers            = context.registers ;
-           ret.pseudoInstructions   = context.pseudoInstructions ;
-           ret.stackRegister        = context.stackRegister ;
-	   if (context.version == 2) 	ret.hash_oceoc = context.hash_oceoc ;
-	   else 			ret.hash_cocop = context.hash_cocop ;
+           ret.error              = null ;
+           ret.metadata           = context.metadata ;
+           ret.firmware           = context.instrucciones ;
+           ret.labels_firm        = context.etiquetas ;
+           ret.mp                 = {} ;
+           ret.seg                = {} ;
+           ret.registers          = context.registers ;
+           ret.pseudoInstructions = context.pseudoInstructions ;
+           ret.stackRegister      = context.stackRegister ;
+	   if (context.metadata.version == 2)
+                ret.hash_oceoc = context.hash_oceoc ;
+	   else ret.hash_cocop = context.hash_cocop ;
            ret.hash_labels_firm_rev = context.revlabels ;
 
            return ret ;
 }
+
 
 /*
  *  Save Firmware
@@ -553,149 +555,35 @@ function loadFirmware (text)
 
 function saveFirmware ( SIMWARE )
 {
-	var file = "";
-	for (i=0; i<SIMWARE.firmware.length; i++)
-	{
-		file += SIMWARE.firmware[i].signatureRaw;
-		file += " {" + '\n';
+	var file = "" ;
 
-		if (typeof SIMWARE.firmware[i].co != "undefined")
-		{
-			file += '\t' +"co=" + SIMWARE.firmware[i].co + "," + '\n';
-		}
+        // save as last version by default ;-)
+        if (typeof SIMWARE.metadata != "undefined") {
+            SIMWARE.metadata.version = 2 ;
+        }
 
-		if (typeof SIMWARE.firmware[i].oc != "undefined")
-		{
-			file += '\t' +"oc=" + SIMWARE.firmware[i].oc + "," + '\n';
-		}
+        // initial header
+        file += "\n" +
+                "#\n" +
+                "# WepSIM (https://wepsim.github.io/wepsim/)\n" +
+                "#\n" +
+                "\n" ;
 
-		if (typeof SIMWARE.firmware[i].cop != "undefined")
-		{
-			file += '\t' +"cop=" + SIMWARE.firmware[i].cop + "," + '\n';
-		}
+        // metadata
+        file += firm_metadata_write(SIMWARE) ;
 
-		if (typeof SIMWARE.firmware[i].eoc != "undefined")
-		{
-			file += '\t' +"eoc=" + SIMWARE.firmware[i].eoc + "," + '\n';
-		}
-
-		if (typeof SIMWARE.firmware[i].nwords != "undefined")
-		{
-			file += '\t' + "nwords=" + SIMWARE.firmware[i].nwords + "," + '\n';
-		}
-
-		if (typeof SIMWARE.firmware[i].fields != "undefined")
-		{	
-			if (SIMWARE.firmware[i].fields.length>0)
-			{
-				for (var j=0;j<SIMWARE.firmware[i].fields.length;j++)
-				{
-					//CAMBIAR, HAY RANGOS SEPARADOS
-					file += '\t' + SIMWARE.firmware[i].fields[j].name + " = " + SIMWARE.firmware[i].fields[j].type;
-					file += "(" + SIMWARE.firmware[i].fields[j].startbit + "," + SIMWARE.firmware[i].fields[j].stopbit + ")";					
-					if (SIMWARE.firmware[i].fields[j].type == "address")
-					{
-						file += SIMWARE.firmware[i].fields[j].address_type;
-					}
-					file += "," + '\n';
-				}
-			}
-		}
-
-		if (typeof SIMWARE.firmware[i].microcode != "undefined")
-		{
-			var addr=SIMWARE.firmware[i]["mc-start"];
-			if (SIMWARE.firmware[i].name != "begin")
-			{
-				file += '\t' + '{' ;
-			}
-
-			for (var j=0; j<SIMWARE.firmware[i].microcode.length; j++)
-			{
-			        if ("" != SIMWARE.firmware[i].microcomments[j])
-                                    file += '\n\t\t# ' + SIMWARE.firmware[i].microcomments[j];
-
-				if (typeof SIMWARE.labels_firm[addr] != "undefined")
-				     file += '\n' + SIMWARE.labels_firm[addr] + ":\t";
-				else file += '\n' + '\t' + '\t';
-
-				file += "(";
-				var anySignal=0;
-				for (var k in SIMWARE.firmware[i].microcode[j])
-				{
-					if ("MADDR" == k)
-                                        {
-                                            var val = SIMWARE.firmware[i].microcode[j][k];
-                                            if (typeof SIMWARE.labels_firm[val] == "undefined")
-                                                 file += k + "=" + val.toString(2) + ", ";
-                                            else file += k + "=" + SIMWARE.labels_firm[val] + ", ";
-                                            continue;
-                                        }
-
-					file += k + "=" + SIMWARE.firmware[i].microcode[j][k].toString(2) + ", ";
-
-					anySignal=1;
-				}
-				if (anySignal==1)
-				{
-					file = file.substr(0, file.length - 2);
-				}
-				file += "),";
-				addr++;
-			}
-
-			file = file.substr(0, file.length - 1);
-			if (SIMWARE.firmware[i].name!="begin")
-			{
-				file += '\n\t}';
-			}
-		}
-
-		file += '\n}\n\n';
-	}	
-
-	if ( (typeof SIMWARE.registers != "undefined") && (SIMWARE.registers.length > 0) )
-	{
-		file += 'registers' + '\n{\n';
-		for (i=0; i< SIMWARE.registers.length; i++)
-		{
-                     var l = SIMWARE.registers[i].length - 1 ;
-                     var r = " [ " ;
-		     for (j=0; j<l; j++)
-                          r += SIMWARE.registers[i][j] + ", " ;
-                     r += SIMWARE.registers[i][l] + " ] " ;
-
-		     if (SIMWARE.stackRegister == i)
-		     	  file += '\t' + i + "=" + r + " (stack_pointer)," + '\n';
-                     else file += '\t' + i + "=" + r + "," + '\n';
-		}
-		file  = file.substr(0, file.length-2);
-		file += '\n}\n';
+        // firmware
+	for (i=0; i<SIMWARE.firmware.length; i++) {
+             file += firm_instruction_write(SIMWARE, SIMWARE.firmware[i], SIMWARE.labels_firm) ;
 	}
+
+        // save registers
+        file += firm_registers_write(SIMWARE) ;
 
         // save pseudo-instructions
-	if (SIMWARE.pseudoInstructions.length !== 0)
-	{
-		file += '\n' +
-			'pseudoinstructions\n' +
-			'{' ;
-		for (var ie=0; ie<SIMWARE.pseudoInstructions.length; ie++)
-		{
-		     file += '\n' +
-			     '\t' + SIMWARE.pseudoInstructions[ie].initial.signature.replace(',', ' ') + '\n' +
-			     '\t{\n' ;
+        file += firm_pseudoinstructions_write(SIMWARE) ;
 
-		     var ie_inst = SIMWARE.pseudoInstructions[ie].finish.signature.split('\n') ;
-		     for (var ie_i=0; ie_i<ie_inst.length; ie_i++)
-		     {
-			  file += '\t\t' + ie_inst[ie_i].trim() + ' ;\n' ;
-		     }
-
-		     file += '\t}\n' ;
-		}
-		file += '}\n' ;
-	}
-
+	// return firmware as string...
 	return file;
 }
 
@@ -706,75 +594,89 @@ function saveFirmware ( SIMWARE )
 
 function decode_instruction ( curr_firm, ep_ir, binstruction )
 {
-	if (curr_firm.version == 2) {
-		var ret = {
-					"oinstruction": null,
-					op_code: 0,
-					eoc: 0
-				} ;
-
-		// instructions as 32-string
-		var bits = binstruction.toString(2).padStart(32, "0") ;
-
-		// op-code
-		var oc = bits.substr(ep_ir.default_eltos.oc.begin, ep_ir.default_eltos.oc.length);
-		ret.op_code = parseInt(oc, 2) ;
-
-		// eoc
-		// https://www2.cs.sfu.ca/~ashriram/Courses/CS295_TA/assets/notebooks/RISCV/RISCV_CARD.pdf
-		if (ep_ir.default_eltos.eoc.type == 2) {
-			if (oc !='1101111' && oc != '0110111' && oc != '0010111') {
-				var eoc = bits.substr(ep_ir.default_eltos.eoc.bits[0][0], ep_ir.default_eltos.eoc.lengths[0]);
-				if (oc == '0110011' || oc == '1110011') {
-					eoc += bits.substr(ep_ir.default_eltos.eoc.bits[1][0], ep_ir.default_eltos.eoc.lengths[1]);
-				} else if (oc == '0010011' && (eoc == '001' || eoc == '101')) {
-					eoc += bits.substr(ep_ir.default_eltos.eoc.bits[1][0], ep_ir.default_eltos.eoc.lengths[1]);
-				}
-			}
-		} else {
-			var eoc = bits.substr(ep_ir.default_eltos.eoc.begin, ep_ir.default_eltos.eoc.length);
-		}
-		ret.eoc = parseInt(eoc, 2) ;
-
-		if ("undefined" == typeof curr_firm.hash_oceoc[oc]) {
-			return ret ;
-		}
-
-		if (false == curr_firm.hash_oceoc[oc].witheoc)
-			ret.oinstruction = curr_firm.hash_oceoc[oc].i ;
-		else ret.oinstruction = curr_firm.hash_oceoc[oc][eoc] ;
-
-	}
-        else
-        {
-		var ret = {
-				"oinstruction": null,
-				op_code: 0,
-				cop_code: 0
-			  } ;
-
-		// instructions as 32-string
-		var bits = binstruction.toString(2).padStart(32, "0") ;
-
-		// op-code
-		var co = bits.substr(ep_ir.default_eltos.co.begin, ep_ir.default_eltos.co.length);
-		ret.op_code = parseInt(co, 2) ;
-
-		// cop-code
-		var cop = bits.substr(ep_ir.default_eltos.cop.begin, ep_ir.default_eltos.cop.length);
-		ret.cop_code = parseInt(cop, 2) ;
-
-		if ("undefined" == typeof curr_firm.hash_cocop[co]) {
-			return ret ;
-		}
-
-		if (false == curr_firm.hash_cocop[co].withcop)
-	 	     ret.oinstruction = curr_firm.hash_cocop[co].i ;
-		else ret.oinstruction = curr_firm.hash_cocop[co][cop] ;
-	}
+    if (curr_firm.metadata.version == 2)
+         return decode_instruction_v2(curr_firm, ep_ir, binstruction) ;
+    else return decode_instruction_v1(curr_firm, ep_ir, binstruction) ;
 
     return ret ;
 }
+
+function decode_instruction_v2 ( curr_firm, ep_ir, binstruction )
+{
+	var ret = {
+			"oinstruction": null,
+			op_code: 0,
+			eoc: 0
+		  } ;
+
+	// instructions as 32-string
+	var bits = binstruction.toString(2).padStart(32, "0") ;
+
+	// op-code
+	var oc = bits.substr(ep_ir.default_eltos.oc.begin, ep_ir.default_eltos.oc.length);
+	ret.op_code = parseInt(oc, 2) ;
+
+	// eoc
+	// https://www2.cs.sfu.ca/~ashriram/Courses/CS295_TA/assets/notebooks/RISCV/RISCV_CARD.pdf
+	if (ep_ir.default_eltos.eoc.type == 2)
+        {
+		if (oc !='1101111' && oc != '0110111' && oc != '0010111')
+                {
+		    var eoc = bits.substr(ep_ir.default_eltos.eoc.bits[0][0], ep_ir.default_eltos.eoc.lengths[0]);
+		    if (oc == '0110011' || oc == '1110011') {
+		    	eoc += bits.substr(ep_ir.default_eltos.eoc.bits[1][0], ep_ir.default_eltos.eoc.lengths[1]);
+		    } else if (oc == '0010011' && (eoc == '001' || eoc == '101')) {
+			eoc += bits.substr(ep_ir.default_eltos.eoc.bits[1][0], ep_ir.default_eltos.eoc.lengths[1]);
+		    }
+		}
+	}
+        else
+        {
+		var eoc = bits.substr(ep_ir.default_eltos.eoc.begin, ep_ir.default_eltos.eoc.length);
+	}
+	ret.eoc = parseInt(eoc, 2) ;
+
+	if ("undefined" == typeof curr_firm.hash_oceoc[oc]) {
+	     return ret ;
+	}
+
+	if (false == curr_firm.hash_oceoc[oc].witheoc)
+	     ret.oinstruction = curr_firm.hash_oceoc[oc].i ;
+	else ret.oinstruction = curr_firm.hash_oceoc[oc][eoc] ;
+
+    return ret ;
+}
+
+function decode_instruction_v1 ( curr_firm, ep_ir, binstruction )
+{
+	var ret = {
+			"oinstruction": null,
+			op_code: 0,
+			cop_code: 0
+		  } ;
+
+	// instructions as 32-string
+	var bits = binstruction.toString(2).padStart(32, "0") ;
+
+	// op-code
+	var co = bits.substr(ep_ir.default_eltos.co.begin, ep_ir.default_eltos.co.length);
+	ret.op_code = parseInt(co, 2) ;
+
+	// cop-code
+	var cop = bits.substr(ep_ir.default_eltos.cop.begin, ep_ir.default_eltos.cop.length);
+	ret.cop_code = parseInt(cop, 2) ;
+
+	if ("undefined" == typeof curr_firm.hash_cocop[co]) {
+	     return ret ;
+	}
+
+	if (false == curr_firm.hash_cocop[co].withcop)
+	     ret.oinstruction = curr_firm.hash_cocop[co].i ;
+	else ret.oinstruction = curr_firm.hash_cocop[co][cop] ;
+
+    return ret ;
+}
+
 
 function decode_ram ( )
 {

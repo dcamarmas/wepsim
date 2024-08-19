@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -17,6 +17,47 @@
  *  along with WepSIM.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+
+function firm_registers_write ( context )
+{
+	var o = "" ;
+
+        // no registers -> return empty section
+	if (typeof context.registers == "undefined") {
+            return o ;
+        }
+	if (0 == context.registers.length) {
+            return o ;
+        }
+
+        // return registers as string...
+	o += 'registers' + '\n' +
+             '{\n' ;
+	for (i=0; i< context.registers.length; i++)
+	{
+	     if (typeof context.registers[i] == "undefined") {
+                 continue ;
+             }
+
+	     var l = context.registers[i].length - 1 ;
+	     var r = "(" ;
+	     for (j=0; j<l; j++) {
+		  r += context.registers[i][j] + ", " ;
+             }
+	     r += context.registers[i][l] + ")" ;
+
+	     if (context.stackRegister == i)
+		  o += '\t' + i + "=" + r + " (stack_pointer)," + '\n' ;
+	     else o += '\t' + i + "=" + r + "," + '\n' ;
+	}
+	o  = o.substr(0, o.length-2) ;
+	o += '\n' +
+             '}\n' ;
+
+        // return string
+	return o ;
+}
 
 
 function firm_registers_read ( context )
@@ -97,7 +138,7 @@ function firm_registers_read ( context )
 
 		frm_nextToken(context);
 	   }
-	
+
 	   if (frm_isToken(context,",")) {
 	       frm_nextToken(context);
 	   }

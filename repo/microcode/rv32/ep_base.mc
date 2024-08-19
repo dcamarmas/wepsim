@@ -131,7 +131,7 @@ in reg val {
             co=111111,
             nwords=1,
             reg=reg(25,21),
-            val=inm(15,0),
+            val=imm(15,0),
             help='reg = device_registers[val]',
             native,
             {
@@ -150,7 +150,7 @@ out reg val {
             co=111111,
             nwords=1,
             reg=reg(25,21),
-            val=inm(15,0),
+            val=imm(15,0),
             help='device_register[val] = reg',
             native,
             {
@@ -167,6 +167,22 @@ out reg val {
 
 
 #
+# Related to power consumption
+#
+
+# RDCYCLE rd      Load clock cycles     rd ← ux(clock_cycles_acc)
+rdcycle reg1  {
+      co=111111,
+      nwords=1,
+      reg1=reg(25,21),
+      help='reg1 = load accumulated clock cycles',
+      {
+           (MH=1, T12=1, SELC=10101, LC=1, A0=1, B=1, C=0)
+      }
+}
+
+
+#
 # https://rv8.io/isa.html
 # RV32I
 # (More details at http://riscvbook.com/spanish/guia-practica-de-risc-v-1.0.5.pdf)
@@ -177,7 +193,7 @@ lui rd inm {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            inm=inm(19,0),
+            inm=imm(19,0),
             help='rd = (inm << 12)',
             native,
             {
@@ -197,7 +213,7 @@ auipc rd offset {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(19,0),
+            offset=imm(19,0),
             help='rd = pc + (offset << 12)',
             native,
             {
@@ -220,34 +236,35 @@ jal rd offset {
             nwords=1,
             rd=reg(25,21),
             offset=address(19,0)rel,
-            help='rd = pc; pc = pc + sext(offset)',
+            help='rd = pc; pc = pc + 4*sext(offset)',
             native,
             {
                 // fields is a default parameter with the instruction field information
                 var rd     = simcore_native_get_field_from_ir(fields, 0) ;
                 var offset = simcore_native_get_field_from_ir(fields, 1) ;
 
-                if ((offset & 0x8000) > 0)
+                if ((offset & 0x8000) > 0) {
                      offset = offset | 0xFFFF0000 ;
+                }
 
                 var pc = simcore_native_get_value("CPU", "REG_PC") ;
                 simcore_native_set_value("BR", rd, pc) ;
-                simcore_native_set_value("CPU", "REG_PC", pc + offset) ;
+                simcore_native_set_value("CPU", "REG_PC", pc + 4*offset) ;
 
                 simcore_native_go_maddr(0) ;
             }
 }
 
 
-#  JALR rd,rs1,offset         Jump and Link Register                         rd ← pc + length(inst)
-#                                                                pc ← (rs1 + offset) & -2
+#  JALR rd,rs1,offset         Jump and Link Register        rd ← pc + length(inst)
+#                                                           pc ← (rs1 + offset) & -2
 jalr rd rs1 offset {
             co=111111,
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
             offset=address(15,0)rel,
-            help='rd = pc; pc = rs1 + offset',
+            help='rd = pc; pc = rs1 + 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -255,11 +272,12 @@ jalr rd rs1 offset {
                 var rs1    = simcore_native_get_field_from_ir(fields, 1) ;
                 var offset = simcore_native_get_field_from_ir(fields, 2) ;
 
-                if ((offset & 0x8000) > 0)
+                if ((offset & 0x8000) > 0) {
                      offset = offset | 0xFFFF0000 ;
+                }
 
                 var     pc = simcore_native_get_value("CPU", "REG_PC") ;
-                var new_pc = simcore_native_get_value("BR", rs1) + offset ;
+                var new_pc = simcore_native_get_value("BR", rs1) + 4*offset ;
                 if (0 != rd) {
                     simcore_native_set_value("BR", rd, pc) ;
                 }
@@ -269,14 +287,14 @@ jalr rd rs1 offset {
             }
 }
 
-#  BEQ rs1,rs2,offset         Branch Equal                                 if rs1 = rs2 then pc ← pc + offset
+#  BEQ rs1,rs2,offset         Branch Equal                         if rs1 = rs2 then pc ← pc + offset
 beq rs1 rs2 offset {
             co=111111,
             nwords=1,
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 == rs2) pc += offset',
+            help='if (rs1 == rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -289,9 +307,10 @@ beq rs1 rs2 offset {
                 if (reg1 == reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -306,7 +325,7 @@ bne rs1 rs2 offset {
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 != rs2) pc += offset',
+            help='if (rs1 != rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -319,9 +338,10 @@ bne rs1 rs2 offset {
                 if (reg1 != reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -336,7 +356,7 @@ blt rs1 rs2 offset {
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 < rs2) pc += offset',
+            help='if (rs1 < rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -349,9 +369,10 @@ blt rs1 rs2 offset {
                 if (reg1 < reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -366,7 +387,7 @@ bge rs1 rs2 offset {
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 >= rs2) pc += offset',
+            help='if (rs1 >= rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -379,9 +400,10 @@ bge rs1 rs2 offset {
                 if (reg1 >= reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -396,7 +418,7 @@ bltu rs1 rs2 offset {
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 < rs2) pc += offset',
+            help='if (rs1 < rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -409,9 +431,10 @@ bltu rs1 rs2 offset {
                 if (reg1 < reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -426,7 +449,7 @@ bgeu rs1 rs2 offset {
             rs1=reg(25,21),
             rs2=reg(20,16),
             offset=address(15,0)rel,
-            help='if (rs1 >= rs2) pc += offset',
+            help='if (rs1 >= rs2) pc += 4*offset',
             native,
             {
                 // fields is a default parameter with the instruction field information
@@ -439,9 +462,10 @@ bgeu rs1 rs2 offset {
                 if (reg1 >= reg2)
                 {
                     var pc = simcore_native_get_value("CPU", "REG_PC") ;
-                    if ((offset & 0x8000) > 0)
+                    if ((offset & 0x8000) > 0) {
                          offset = offset | 0xFFFF0000 ;
-                    pc = pc + offset ;
+                    }
+                    pc = pc + 4*offset ;
                     simcore_native_set_value("CPU", "REG_PC", pc) ;
                 }
 
@@ -454,7 +478,7 @@ lb rd offset(rs1) {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='rd = MEM[rs1 + offset]',
             native,
@@ -488,7 +512,7 @@ lh rd offset(rs1) {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='rd = (00, 00, MEM[rs1+offset+1], MEM[rs1+offset])',
             native,
@@ -529,7 +553,7 @@ lw rd offset(rs1) {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='rd = (MEM[rs1+offset+3] .. MEM[rs1+offset])',
             native,
@@ -555,7 +579,7 @@ lbu rd offset(rs1) {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='rd = MEM[rs1 + offset]',
             native,
@@ -587,7 +611,7 @@ lhu rd offset(rs1) {
             co=111111,
             nwords=1,
             rd=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='rd = (00, 00, MEM[rs1+offset+1], MEM[rs1+offset])',
             native,
@@ -612,7 +636,7 @@ lhu rd offset(rs1) {
                         w_value2 = w_value2 & 0x000000FF ;
                     b_value = (b_value & 0x000000FF) | (w_value2 << 8) ;
                 }
-                // unsigned 
+                // unsigned
                 b_value = b_value & 0x0000FFFF ;
                 // load value into the register file
                 simcore_native_set_value("BR", rd, b_value) ;
@@ -626,7 +650,7 @@ sb rs2 offset(rs1) {
             co=111111,
             nwords=1,
             rs2=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='MEM[rs1 + offset] = rs2/8',
             native,
@@ -660,7 +684,7 @@ sh rs2 offset(rs1) {
             co=111111,
             nwords=1,
             rs2=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='MEM[rs1+offset+1 .. rs1+offset] = rs2/16',
             native,
@@ -706,7 +730,7 @@ sw reg1 val(reg2) {
             co=111111,
             nwords=1,
             reg1 = reg(25,21),
-            val  = inm(15,0),
+            val  = imm(15,0),
             reg2 = reg(20,16),
             help='MEM[rs1+offset+3 .. rs1+offset] = rs2',
             native,
@@ -732,7 +756,7 @@ sbu rs2 offset(rs1) {
             co=111111,
             nwords=1,
             rs2=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='MEM[rs1 + offset] = ux(rs2/8)',
             native,
@@ -767,7 +791,7 @@ shu rs2 offset(rs1) {
             co=111111,
             nwords=1,
             rs2=reg(25,21),
-            offset=inm(15,0),
+            offset=imm(15,0),
             rs1=reg(20,16),
             help='MEM[rs1+offset+1 .. rs1+offset] = rs2/16',
             native,
@@ -815,7 +839,7 @@ addi rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(11,0),
+            inm=imm(11,0),
             help='rd = rs1 + SignEx(inm)',
             native,
             {
@@ -845,7 +869,7 @@ addu rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(11,0),
+            inm=imm(11,0),
             help='rd = rs1 + UnsignEx(inm)',
             native,
             {
@@ -872,7 +896,7 @@ slti rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = (rs1 < inm) ? 1 : 0',
             native,
             {
@@ -897,7 +921,7 @@ sltiu rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = (ux(rs1) < ux(inm)) ? 1 : 0',
             native,
             {
@@ -919,7 +943,7 @@ xori rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = ux(rs1) ^ ux(inm)',
             native,
             {
@@ -941,7 +965,7 @@ ori rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = rs1 | inm',
             native,
             {
@@ -963,7 +987,7 @@ andi rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = rs1 + inm',
             native,
             {
@@ -985,7 +1009,7 @@ slli rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(5,0),
+            inm=imm(5,0),
             help='rd = rs1 <<< inm',
             native,
             {
@@ -1008,7 +1032,7 @@ srli rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(5,0),
+            inm=imm(5,0),
             help='rd = rs1 >>> inm',
             native,
             {
@@ -1030,7 +1054,7 @@ srai rd rs1 inm {
             nwords=1,
             rd=reg(25,21),
             rs1=reg(20,16),
-            inm=inm(15,0),
+            inm=imm(15,0),
             help='rd = rs1 >> inm',
             native,
             {
@@ -1269,19 +1293,19 @@ and reg1 reg2 reg3 {
             }
 }
 
-#  FENCE pred,succ         Fence         
+#  FENCE pred,succ         Fence        
 fence pred succ {
             co=111111,
             nwords=1,
-            pred=inm(25,21),
-            succ=inm(15,0),
+            pred=imm(25,21),
+            succ=imm(15,0),
             native,
             {
                 simcore_native_go_maddr(0) ;
             }
 }
 
-#  FENCE.I                 Fence Instruction         
+#  FENCE.I                 Fence Instruction        
 fence.i {
             co=111111,
             nwords=1,
@@ -1752,150 +1776,155 @@ registers
 
 pseudoinstructions
 {
-        # nop        addi zero,zero,0        No operation
-        nop
-        {
-            addi zero zero 0
-        }
+    # nop        addi zero,zero,0        No operation
+    nop
+    {
+        addi zero zero 0
+    }
 
-        # li rd, expression        (several expansions)        Load immediate
-        li rd=reg, expression=inm
-        {
-            lui  rd,     sel(31,12,expression)
-            addu rd, rd, sel(11,0,expression)
-        }
+    # li rd, expression        (several expansions)        Load immediate
+    li rd=reg, expression=imm
+    {
+        addi rd x0 expression
+    }
 
-        # la rd, label        (several expansions)        Load address
-        la rd=reg, label=inm
-        {
-            lui  rd,     sel(31,12,label)
-            addu rd, rd, sel(11,0,label)
-        }
+    li rd=reg, expression=imm
+    {
+        lui  rd,     sel(31,12,expression)
+        addu rd, rd, sel(11,0,expression)
+    }
 
-        # mv rd, rs1        addi rd, rs, 0        Copy register
-        mv rd=reg, rs=reg
-        {
-            addi rd, rs, 0
-        }
+    # la rd, label        (several expansions)        Load address
+    la rd=reg, label=imm
+    {
+        lui  rd,     sel(31,12,label)
+        addu rd, rd, sel(11,0,label)
+    }
 
-        # not rd, rs1        xori rd, rs, -1        One’s complement
-        not rd=reg, rs=reg
-        {
-            xori rd, rs, -1
-        }
+    # mv rd, rs1        addi rd, rs, 0        Copy register
+    mv rd=reg, rs=reg
+    {
+        addi rd, rs, 0
+    }
 
-        # neg rd, rs1        sub rd, x0, rs        Two’s complement
-        neg rd=reg, rs=reg
-        {
-            sub rd, zero, rs
-        }
+    # not rd, rs1        xori rd, rs, -1        One’s complement
+    not rd=reg, rs=reg
+    {
+        xori rd, rs, -1
+    }
 
-        # seqz rd, rs1        sltiu rd, rs, 1        Set if = zero
-        seqz rd=reg, rs1=reg
-        {
-            sltiu rd, rs, 1
-        }
+    # neg rd, rs1        sub rd, x0, rs        Two’s complement
+    neg rd=reg, rs=reg
+    {
+        sub rd, zero, rs
+    }
 
-        # snez rd, rs1        sltu rd, x0, rs        Set if ≠ zero
-        snez rd=reg, rs1=reg
-        {
-            sltu rd, x0, rs
-        }
+    # seqz rd, rs1        sltiu rd, rs, 1        Set if = zero
+    seqz rd=reg, rs1=reg
+    {
+        sltiu rd, rs, 1
+    }
 
-        # sltz rd, rs1        slt rd, rs, x0        Set if < zero
-        sltz rd=reg, rs1=reg
-        {
-            slt rd, rs, x0
-        }
+    # snez rd, rs1        sltu rd, x0, rs        Set if ≠ zero
+    snez rd=reg, rs1=reg
+    {
+        sltu rd, x0, rs
+    }
 
-        # sgtz rd, rs1        slt rd, x0, rs        Set if > zero
-        sgtz rd=reg, rs1=reg
-        {
-            slt rd, x0, rs
-        }
+    # sltz rd, rs1        slt rd, rs, x0        Set if < zero
+    sltz rd=reg, rs1=reg
+    {
+        slt rd, rs, x0
+    }
 
-        # beqz rs1, offset        beq rs, x0, offset        Branch if = zero
-        beqz rs=reg, offset=inm
-        {
-            beq rs, zero, offset
-        }
+    # sgtz rd, rs1        slt rd, x0, rs        Set if > zero
+    sgtz rd=reg, rs1=reg
+    {
+        slt rd, x0, rs
+    }
 
-        # bnez rs1, offset        bne rs, x0, offset        Branch if ≠ zero
-        bnez rs=reg, offset=inm
-        {
-            bne rs, zero, offset
-        }
+    # beqz rs1, offset        beq rs, x0, offset        Branch if = zero
+    beqz rs=reg, offset=imm
+    {
+        beq rs, zero, offset
+    }
 
-        # blez rs1, offset        bge x0, rs, offset        Branch if ≤ zero
-        blez rs=reg, offset=inm
-        {
-            bge zero, rs, offset
-        }
+    # bnez rs1, offset        bne rs, x0, offset        Branch if ≠ zero
+    bnez rs=reg, offset=imm
+    {
+        bne rs, zero, offset
+    }
 
-        # bgez rs1, offset        bge rs, x0, offset        Branch if ≥ zero
-        bgez rs=reg, offset=inm
-        {
-            bge rs, zero, offset
-        }
+    # blez rs1, offset        bge x0, rs, offset        Branch if ≤ zero
+    blez rs=reg, offset=imm
+    {
+        bge zero, rs, offset
+    }
 
-        # bltz rs1, offset        blt rs, x0, offset        Branch if < zero
-        bltz rs=reg, offset=inm
-        {
-            blt rs, zero, offset
-        }
+    # bgez rs1, offset        bge rs, x0, offset        Branch if ≥ zero
+    bgez rs=reg, offset=imm
+    {
+        bge rs, zero, offset
+    }
 
-        # bgtz rs1, offset        blt x0, rs, offset        Branch if > zero
-        bgtz rs=reg, offset=inm
-        {
-            blt zero, rs, offset
-        }
+    # bltz rs1, offset        blt rs, x0, offset        Branch if < zero
+    bltz rs=reg, offset=imm
+    {
+        blt rs, zero, offset
+    }
 
-        # bgt rs, rt, offset        blt rt, rs, offset        Branch if >
-        bgt rs=reg, rt=reg, offset=inm
-        {
-            blt rt, rs, offset
-        }
+    # bgtz rs1, offset        blt x0, rs, offset        Branch if > zero
+    bgtz rs=reg, offset=imm
+    {
+        blt zero, rs, offset
+    }
 
-        # ble rs, rt, offset        bge rt, rs, offset        Branch if ≤
-        ble rs=reg, rt=reg, offset=inm
-        {
-            bge rt, rs, offset
-        }
+    # bgt rs, rt, offset        blt rt, rs, offset        Branch if >
+    bgt rs=reg, rt=reg, offset=imm
+    {
+        blt rt, rs, offset
+    }
 
-        # bgtu rs, rt, offset        bltu rt, rs, offset        Branch if >, unsigned
-        bgtu rs=reg, rt=reg, offset=inm
-        {
-            bltu rt, rs, offset
-        }
+    # ble rs, rt, offset        bge rt, rs, offset        Branch if ≤
+    ble rs=reg, rt=reg, offset=imm
+    {
+        bge rt, rs, offset
+    }
 
-        # bleu rs, rt, offset        bltu rt, rs, offset        Branch if ≤, unsigned
-        bleu rs=reg, rt=reg, offset=inm
-        {
-            bgeu rt, rs, offset
-        }
+    # bgtu rs, rt, offset        bltu rt, rs, offset        Branch if >, unsigned
+    bgtu rs=reg, rt=reg, offset=imm
+    {
+        bltu rt, rs, offset
+    }
 
-        # j offset        jal x0, offset        Jump
-        j offset=inm
-        {
-            jal zero, offset
-        }
+    # bleu rs, rt, offset        bltu rt, rs, offset        Branch if ≤, unsigned
+    bleu rs=reg, rt=reg, offset=imm
+    {
+        bgeu rt, rs, offset
+    }
 
-        # jal offset        jal x1, offset        Jump register
-        #jal offset=inm
-        #{
-        #    jal ra, offset
-        #}
+    # j offset        jal x0, offset        Jump
+    j offset=imm
+    {
+        jal zero, offset
+    }
 
-        # jr rs                jalr x0, rs, 0        Jump register
-        jr rs=reg
-        {
-            jalr zero, rs, 0
-        }
+    # jal offset        jal x1, offset        Jump register
+    #jal offset=imm
+    #{
+    #    jal ra, offset
+    #}
 
-        # ret        jalr x0, x1, 0        Return from subroutine
-        ret
-        {
-            jalr zero, ra, 0
-        }
+    # jr rs                jalr x0, rs, 0        Jump register
+    jr rs=reg
+    {
+        jalr zero, rs, 0
+    }
+
+    # ret        jalr x0, x1, 0        Return from subroutine
+    ret
+    {
+        jalr zero, ra, 0
+    }
 }
 

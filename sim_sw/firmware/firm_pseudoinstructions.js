@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -19,12 +19,83 @@
  */
 
 
+function firm_pseudoinstructions_write ( context )
+{
+	var o = "" ;
+        var elto = null ;
+        var ie_inst = "" ;
+
+        // no pseudo -> return empty section
+	if (typeof context.pseudoInstructions == "undefined") {
+            return o ;
+        }
+	if (0 == context.pseudoInstructions.length) {
+            return o ;
+        }
+
+        // return pseudo as string...
+	o += '\n' +
+	     'pseudoinstructions\n' +
+	     '{' ;
+	for (var ie=0; ie<context.pseudoInstructions.length; ie++)
+	{
+             elto = context.pseudoInstructions[ie] ;
+
+             // li rd=reg, expression=imm
+	     o += '\n' ;
+             if (
+                  (typeof elto.initial      != "undefined") &&
+                  (typeof elto.initial.name != "undefined")
+                )
+             {
+                 o += '\t' + elto.initial.name + ' ' ;
+                 for (var k=0; k<elto.initial.fields.length; k++)
+                 {
+                      o += elto.initial.fields[k].name + '=' + elto.initial.fields[k].type ;
+
+                      if (k != (elto.initial.fields.length-1)) {
+                          o += ', ' ;
+                      }
+                 }
+             }
+
+             // { instruction-1 ... }
+             o += " {" + '\n';
+
+	     ie_inst = elto.finish.source.split('\n') ;
+	     for (var ie_i=0; ie_i<ie_inst.length; ie_i++)
+             {
+		  o += '\t\t' + ie_inst[ie_i].trim() ;
+
+                  if (ie_i != (ie_inst.length-1)) {
+                      o += ' ;' ;
+                  }
+                  o += '\n' ;
+	     }
+
+	     o += '\t}\n' ;
+	}
+	o += '}\n' ;
+
+        // return string
+	return o ;
+}
+
+
 function firm_pseudoinstructions_read ( context )
 {
+	var tok = '' ;
+
+        // speedup instruction name search using a hash table
+        var hash_inst_name = {} ;
+        for (i=0; i<context.instrucciones.length; i++) {
+             hash_inst_name[context.instrucciones[i].name] = context.instrucciones[i].name ;
+        }
+
 	//
 	// *pseudoinstructions
 	// {
-	//    li reg=reg num=inm { lui reg high(num) ; ori reg reg low(num) }
+	//    li reg=reg num=imm { lui reg high(num) ; ori reg reg low(num) }
 	// }*
 	//
 
@@ -39,13 +110,14 @@ function firm_pseudoinstructions_read ( context )
 	frm_nextToken(context);
 	while (! frm_isToken(context, "}"))
 	{
-		var pseudoInstructionAux = {};			
-		var pseudoInitial	 = {};
-		pseudoInitial.signature	 = "";
-		pseudoInitial.name	 = "";
-		pseudoInitial.fields	 = [];
-		pseudoInitial.name	 = frm_getToken(context);
+		var pseudoInstructionAux = {} ;
+		var pseudoInitial	 = {} ;
+		pseudoInitial.signature	 = "" ;
+		pseudoInitial.name	 = "" ;
+		pseudoInitial.fields	 = [] ;
+		pseudoInitial.name	 = frm_getToken(context) ;
 		pseudoInitial.signature	 = pseudoInitial.signature + frm_getToken(context) + "," ;
+
 		frm_nextToken(context);
 		while (! frm_isToken(context, "{"))
 		{
@@ -84,20 +156,14 @@ function firm_pseudoinstructions_read ( context )
 
 			// name=*type*
 			frm_nextToken(context);
-			pseudoFieldAux.type += frm_getToken(context).replace("num", "inm");
+			pseudoFieldAux.type += frm_getToken(context).replace("num", "imm");
 
-			switch (pseudoFieldAux.type)
-			{
-				case "reg":
-				case "inm":
-				case "addr":
-				case "address":
-				     break;
-				default:						
-				     return frm_langError(context,
-						          i18n_get_TagFor('compiler', 'INVALID PARAMETER') + pseudoFieldAux.type + '.' +
-						      i18n_get_TagFor('compiler', 'ALLOWED PARAMETER')) ;
-			}
+                        if (["reg", "inm", "imm", "addr", "address"].includes(pseudoFieldAux.type) == false) {
+			    return frm_langError(context,
+					         i18n_get_TagFor('compiler', 'INVALID PARAMETER') +
+                                                 pseudoFieldAux.type + '.' +
+					         i18n_get_TagFor('compiler', 'ALLOWED PARAMETER')) ;
+                        }
 
 			pseudoInitial.fields.push(pseudoFieldAux);
 
@@ -112,51 +178,52 @@ function firm_pseudoinstructions_read ( context )
 		}
 
 		frm_nextToken(context);
-		pseudoInitial.signature = pseudoInitial.signature.substr(0, pseudoInitial.signature.length-1).replace(/num/g,"inm");
-		pseudoInstructionAux.initial = pseudoInitial;	
-		var contPseudoFinish = 0;
+		pseudoInitial.signature = pseudoInitial.signature.substr(0, pseudoInitial.signature.length-1).replace(/num/g,"imm");
+		pseudoInstructionAux.initial = pseudoInitial;
 
-		var pseudoFinishAux = {};
-		pseudoFinishAux.signature = "";
-		
-		var inStart = 0;
-		var cont = false;
+                // new ".finish" field in "pseudo" element
+		var pseudoFinishAux = {} ;
+		pseudoFinishAux.signature = "" ;
+		pseudoFinishAux.source    = "" ;
 
+                // read ".finish" field...
+		var inStart = 0 ;
 		while (! frm_isToken(context, "}"))
 		{
+		        tok = frm_getToken(context) ;
+
 			if (inStart == 0)
 			{
-				for (i=0; i<context.instrucciones.length; i++)
-				{
-					if (context.instrucciones[i].name == frm_getToken(context)){
-						cont = true;
-						break;
-					}	
-				}
-				if (!cont) {
-				    return frm_langError(context,
-						         i18n_get_TagFor('compiler', 'UNDEF. INSTR.') +
-						         "'" + frm_getToken(context) + "'") ;
-				}
+                            if (typeof hash_inst_name[tok] == "undefined") {
+				return frm_langError(context,
+						     i18n_get_TagFor('compiler', 'UNDEF. INSTR.') +
+						     "'" + tok + "'") ;
+			    }
 			}
 
-			if (frm_getToken(context) == ";")
-			     inStart = 0;
-			else inStart++;
+			if (tok == ";")
+			     inStart = 0 ;
+			else inStart++ ;
 
-			pseudoFinishAux.signature = pseudoFinishAux.signature + frm_getToken(context) + " ";
-			frm_nextToken(context);
+			pseudoFinishAux.signature = pseudoFinishAux.signature + tok + " " ;
+			pseudoFinishAux.source    = pseudoFinishAux.source    + tok + " " ;
+
+			frm_nextToken(context) ;
 		}
 
-		pseudoInstructionAux.finish=pseudoFinishAux;
-		pseudoInstructionAux.finish.signature=pseudoInstructionAux.finish.signature.replace(';','\n');
-		context.pseudoInstructions.push(pseudoInstructionAux);
-		frm_nextToken(context);
+		pseudoInstructionAux.finish = pseudoFinishAux ;
+		pseudoInstructionAux.finish.signature = pseudoInstructionAux.finish.signature.replace(';', ' ') ;
+		pseudoInstructionAux.finish.source    = pseudoInstructionAux.finish.source.replace(';',    '\n') ;
+		context.pseudoInstructions.push(pseudoInstructionAux) ;
+		frm_nextToken(context) ;
 	}
 
         // skip }
 	frm_nextToken(context);
 
-        return {} ;
+        // return context
+        context.error = null ;
+        return context ;
 }
+
 

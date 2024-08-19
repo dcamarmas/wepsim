@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos
+ *  Copyright 2015-2024 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos
  *
  *  This file is part of WepSIM.
  *
@@ -29,6 +29,7 @@ ws_directives = {
 		  ".ktext":     { name:".ktext",  kindof:"segment",  size:0, attrs:["text"]    },
 		  ".data":      { name:".data",   kindof:"segment",  size:0, attrs:["data"]    },
 		  ".text":      { name:".text",   kindof:"segment",  size:0, attrs:["text"]    },
+		  ".binary":    { name:".binary", kindof:"segment",  size:0, attrs:["binary"]  },
 
                   // datatypes
 		  ".byte":      { name:".byte",   kindof:"datatype", size:1, attrs:["numeric"] },

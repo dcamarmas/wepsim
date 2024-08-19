@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -17,6 +17,48 @@
  *  along with WepSIM.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+
+function firm_fields_v2_write ( elto_fields )
+{
+	var o = "" ;
+
+        // no fields -> return empty
+	if (typeof elto_fields == "undefined") {
+            return o ;
+        }
+
+	// fields:
+	//   reg(25:21)=field1,
+	//   address-rel(19|18:0)=field2,
+	for (j=0; j<elto_fields.length; j++)
+	{
+		 o += '\t' + elto_fields[j].type ;
+		 if ("address" == elto_fields[j].type) {
+		     o += '-' + elto_fields[j].address_type ;
+		 }
+
+		 o += "(" ;
+		 for (k=0; k<elto_fields[j].bits_start.length; k++)
+		 {
+		      if (elto_fields[j].bits_start[k] != elto_fields[j].bits_stop[k])
+			   o += elto_fields[j].bits_start[k] + ":" + elto_fields[j].bits_stop[k] ;  // 18:0
+		      else o += elto_fields[j].bits_start[k] ; // 19
+
+		      if (k != (elto_fields[j].bits_start.length-1)) {
+			  o += '|' ; // if not last field then add a '|'
+		      }
+		 }
+		 o += ")" ;
+
+                 if (["oc", "eoc"].includes(elto_fields[j].type))
+		      o += " = " + elto_fields[j].value + "," + '\n';
+		 else o += " = " + elto_fields[j].name  + "," + '\n';
+	}
+
+        // return string
+	return o ;
+}
 
 
 function firm_instruction_check_oc ( context, instruccionAux, xr_info, all_ones_oc )
@@ -52,31 +94,43 @@ function firm_instruction_check_oc ( context, instruccionAux, xr_info, all_ones_
        return {} ;
 }
 
-function firm_instruction_check_eoc ( context, instruccionAux, xr_info )
+function firm_instruction_check_eoc ( context, instruccionAux, xr_info, all_ones_oc )
 {
 	// semantic check: valid value
-	if (instruccionAux.eoc.match("[01]*")[0] != instruccionAux.eoc ||
-	    (instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.length &&
-	    instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.lengths[0] &&
-	    instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.lengths[1])) {
+/*
+	if (
+             (instruccionAux.eoc.match("[01]*")[0] != instruccionAux.eoc) ||
+	     (instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.length     &&
+	      instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.lengths[0] &&
+	      instruccionAux.eoc.length !== xr_info.ir.default_eltos.eoc.lengths[1])
+           )
+*/
+	if (instruccionAux.eoc.match("[01]*")[0] != instruccionAux.eoc)
+        {
 	    return frm_langError(context,
 			         i18n_get_TagFor('compiler', 'INCORRECT EOC BIN.') +
 			         "'" + instruccionAux.eoc + "'") ;
 	}
 
-	// semantic check: 'oc+eoc' is not already used
-	if (        (context.oc_eoc[instruccionAux.oc].eoc != null) &&
-	     (typeof context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] != "undefined") )
-	{
-	      return frm_langError(context,
-			           i18n_get_TagFor('compiler', 'OC+EOC ALREADY USED') +
-			           "'" + context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] + "'") ;
-	}
-	if (context.oc_eoc[instruccionAux.oc].eoc == null)
-	    context.oc_eoc[instruccionAux.oc].eoc = {};
-	    context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] = instruccionAux.signature ;
+	if (context.oc_eoc[instruccionAux.oc].eoc == null) {
+	    context.oc_eoc[instruccionAux.oc].eoc = {} ;
+        }
 
-       return {} ;
+	// semantic check: 'oc+eoc' is not already used
+        if (instruccionAux.oc != all_ones_oc)
+        {
+	    if (        (context.oc_eoc[instruccionAux.oc].eoc != null) &&
+	         (typeof context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] != "undefined") )
+	    {
+	          return frm_langError(context,
+			               i18n_get_TagFor('compiler', 'OC+EOC ALREADY USED') +
+			               "'" + context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] + "'") ;
+	    }
+
+	    context.oc_eoc[instruccionAux.oc].eoc[instruccionAux.eoc] = instruccionAux.signature ;
+        }
+
+        return {} ;
 }
 
 function firm_instruction_keynumber_read ( context, instruccionAux )
@@ -372,6 +426,10 @@ function firm_instruction_field_read_v2 ( context, instruccionAux )
 		var index_name = -1 ;
 		for (var i=0; (i<instruccionAux.fields.length) && (index_name == -1); i++)
 		{
+		     if (typeof instruccionAux.fields[i].type != "undefined") {
+                         continue ; // skip already assigned fields
+		     }
+
 		     if (instruccionAux.fields[i].name == tmp_name)
 		     {
 			 instruccionAux.fields[i] = tmp_fields ;
@@ -465,9 +523,9 @@ function firm_instruction_read_fields_v2 ( context, instruccionAux, xr_info, all
 		   }
 
                    instruccionAux.eoc = ret.value ;
-				   instruccionAux.fields_eoc.push(ret.value) ;
+		   instruccionAux.fields_eoc.push(ret.value) ;
 
-                   ret = firm_instruction_check_eoc(context, instruccionAux, xr_info) ;
+                   ret = firm_instruction_check_eoc(context, instruccionAux, xr_info, all_ones_oc) ;
 		   if (typeof ret.error != "undefined") {
 		       return ret ;
 		   }
@@ -548,15 +606,17 @@ function firm_instruction_read_fields_v2 ( context, instruccionAux, xr_info, all
        // semantic check: valid pending value (eoc.length if native.false)
        if ( (instruccionAux["is_native"] === false) &&
 	    (typeof instruccionAux.eoc   !== 'undefined') &&
-	    (instruccionAux.eoc.length   !== xr_info.ir.default_eltos.eoc.length) &&
+	    (instruccionAux.eoc.length   !== xr_info.ir.default_eltos.eoc.length)     &&
 	    (instruccionAux.eoc.length   !== xr_info.ir.default_eltos.eoc.lengths[0]) &&
-	    (instruccionAux.eoc.length   !== xr_info.ir.default_eltos.eoc.lengths[1]))
+	    (instruccionAux.eoc.length   !== xr_info.ir.default_eltos.eoc.lengths[1]) )
        {
 	    return frm_langError(context,
 			         i18n_get_TagFor('compiler', 'BAD EOC BIN. LEN.') +
 			     "'" + frm_getToken(context) + "'") ;
        }
 
-       return {} ;
+       // return context
+       context.error = null ;
+       return context ;
 }
 

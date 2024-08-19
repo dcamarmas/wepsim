@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos
+ *  Copyright 2015-2024 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos, Juan Banga Pardo
  *
  *  This file is part of WepSIM.
  *
@@ -19,68 +19,9 @@
  */
 
 
-/*
- *   Directives
- */
-
- directives = {
-                  // segments
-                  ".kdata":     { name:".kdata",  kindof:"segment",  size:0 },
-		  ".ktext":     { name:".ktext",  kindof:"segment",  size:0 },
-		  ".data":      { name:".data",   kindof:"segment",  size:0 },
-		  ".text":      { name:".text",   kindof:"segment",  size:0 },
-
-                  // datatypes
-		  ".byte":      { name:".byte",   kindof:"datatype", size:1 },
-		  ".half":      { name:".half",   kindof:"datatype", size:2 },
-		  ".word":      { name:".word",   kindof:"datatype", size:4 },
-		  ".float":     { name:".float",  kindof:"datatype", size:4 },
-		  ".double":    { name:".double", kindof:"datatype", size:8 },
-		  ".ascii":     { name:".ascii",  kindof:"datatype", size:1 },
-		  ".asciiz":    { name:".asciiz", kindof:"datatype", size:1 },
-		  ".space":     { name:".space",  kindof:"datatype", size:1 },
-		  ".string":    { name:".string", kindof:"datatype", size:1 },
-		  ".zero":      { name:".zero",   kindof:"datatype", size:1 },
-
-                  // modifiers
-		  ".align":     { name:".align",  kindof:"datatype", size:0 }
-              } ;
-
-/* directives */
-function get_datatype_size ( datatype )
-{
-	if (typeof directives[datatype] === "undefined") {
-	    console.log("ERROR: not defined datatype: " + datatype + "\n") ;
-	    return 0 ;
-   	}
-
-	return directives[datatype].size ;
-}
-
-function is_directive_kindof ( text, kindof )
-{
-        if (typeof directives[text] === "undefined") {
-            // console.log("ERROR: not defined directive: " + text + "\n")
-            return false ;
-        }
-
-        return (directives[text].kindof == kindof) ;
-}
-
-function is_directive ( text )
-{
-	return (typeof directives[text] !== "undefined");
-}
-
-function is_directive_segment ( text )
-{
-        return is_directive_kindof(text, 'segment') ;
-}
-
-function is_directive_datatype ( text )
-{
-        return is_directive_kindof(text, 'datatype') ;
-}
+//
+// Auxiliar from v1
+//
 
 function isValidTag ( tag )
 {
@@ -95,6 +36,55 @@ function isValidTag ( tag )
 
 	var myRegEx  = /[^a-z,_\d]/i ;
 	return !(myRegEx.test(tag)) ;
+}
+
+function is_end_of_file (context)
+{
+	return ("" === asm_getToken(context)) && (context.t >= context.text.length) ;
+}
+
+function reset_assembly (nwords)
+{
+        return "0".repeat(WORD_LENGTH*nwords);
+}
+
+function assembly_replacement (machineCode, num_bits, startbit, stopbit, free_space)
+{
+	var machineCodeAux = machineCode.substring(0, machineCode.length-startbit+free_space);
+	machineCode = machineCodeAux + num_bits + machineCode.substring(machineCode.length-stopbit);
+
+	return machineCode;
+}
+
+function assembly_co_cop(machineCode, co, cop)
+{
+        var xr_info = simhw_sim_ctrlStates_get() ;
+
+	if (co !== false)
+	    machineCode = assembly_replacement(machineCode, co, WORD_LENGTH, WORD_LENGTH-6, 0);
+	if (cop !== false)
+	    machineCode = assembly_replacement(machineCode, cop, xr_info.ir.default_eltos.cop.length, 0, 0);
+
+	return machineCode;
+}
+
+function writememory_and_reset ( mp, gen, nwords )
+{
+	if (gen.byteWord >= WORD_BYTES)
+        {
+	    var melto = {
+			  "value":           gen.machineCode,
+			  "source_tracking": gen.track_source,
+			  "comments":        gen.comments
+			} ;
+            main_memory_set(mp, "0x" + gen.seg_ptr.toString(16), melto) ;
+
+            gen.seg_ptr      = gen.seg_ptr + WORD_BYTES ;
+            gen.byteWord     = 0 ;
+            gen.track_source = [] ;
+            gen.comments     = [] ;
+            gen.machineCode  = reset_assembly(nwords) ;
+        }
 }
 
 function sum_array ( a )
@@ -138,53 +128,86 @@ function get_candidate ( advance, instruction )
 	return candidate ? parseInt(candidate) : candidate;
 }
 
-function reset_assembly (nwords)
+
+
+// Auxiliar for v2
+function bits_size ( bits )
 {
-	return "0".repeat(WORD_LENGTH*nwords);
+	var len = 0;
+	for (var i=0; i<bits.length; i++)
+	{
+	     len += bits[i][0] - bits[i][1] + 1 ;
+	}
+
+	return len ;
 }
 
-function assembly_replacement (machineCode, num_bits, startbit, stopbit, free_space)
-{
-	var machineCodeAux = machineCode.substring(0, machineCode.length-startbit+free_space);
-	machineCode = machineCodeAux + num_bits + machineCode.substring(machineCode.length-stopbit);
-
-	return machineCode;
+function setCharAt ( str, index, chr ) {
+	if(index > str.length-1) return str;
+	return str.substring(0,index) + chr + str.substring(index+1);
 }
 
-function assembly_co_cop(machineCode, co, cop)
+function assembly_oc_eoc_v2 ( machineCode, oc, eoc )
 {
-        var xr_info = simhw_sim_ctrlStates_get() ;
+	var xr_info = simhw_sim_ctrlStates_get() ;
+	var bits  = xr_info.ir.default_eltos.eoc.bits_field ;
+	var start = 31 - xr_info.ir.default_eltos.oc.begin + 1;
+	var stop  = 31 - xr_info.ir.default_eltos.oc.end;
 
-	if (co !== false)
-	    machineCode = assembly_replacement(machineCode, co, WORD_LENGTH, WORD_LENGTH-6, 0);
-	if (cop !== false)
-	    machineCode = assembly_replacement(machineCode, cop, xr_info.ir.default_eltos.cop.length, 0, 0);
-
-	return machineCode;
-}
-
-function writememory_and_reset ( mp, gen, nwords )
-{
-	if (gen.byteWord >= WORD_BYTES)
-        {
-	    var melto = {
-			  "value":           gen.machineCode,
-			  "source_tracking": gen.track_source,
-			  "comments":        gen.comments
-			} ;
-            main_memory_set(mp, "0x" + gen.seg_ptr.toString(16), melto) ;
-
-            gen.seg_ptr      = gen.seg_ptr + WORD_BYTES ;
-            gen.byteWord     = 0 ;
-            gen.track_source = [] ;
-            gen.comments     = [] ;
-            gen.machineCode  = reset_assembly(nwords) ;
+	if (oc !== false) {
+	    machineCode = assembly_replace_v2(machineCode, oc, start, stop, 0, 0);
         }
+
+	if (eoc !== false)
+        {
+		if (eoc.length === 3) {
+			machineCode = assembly_replace_v2(machineCode, eoc, bits[0][0]+1, bits[0][1], 0, 0);
+		} else {
+			//machineCode = assembly_replace_v2(machineCode, eoc, undefined, undefined, bits, 0);
+			var j = 0;
+			for (var k=0; k < bits.length; k++)
+                        {
+				for (var i=(31-bits[k][0]); i <= (31-bits[k][1]); i++) {
+					if (j < eoc.length) {
+						machineCode = setCharAt(machineCode, i, eoc[j]);
+						j++;
+					}
+				}
+			}
+
+		}
+        }
+
+	return machineCode;
 }
 
-function is_end_of_file (context)
+function assembly_replace_v2 ( machineCode, num_bits, startbit, stopbit, bits, free_space )
 {
-	return ("" === asm_getToken(context)) && (context.t >= context.text.length) ;
+
+	if (startbit !== undefined && stopbit !== undefined) {
+		// Version 1 assembly compiler code
+		var machineCodeAux = machineCode.substring(0, machineCode.length-startbit+free_space);
+		machineCode = machineCodeAux + num_bits + machineCode.substring(machineCode.length-stopbit);
+
+		// Prevent word to be less than 32 bits
+		if (machineCode.length < 32) {
+			machineCode = "0".repeat(32-machineCode.length) + machineCode;
+		}
+	} else {
+		// Assembly replace for separated fields
+		var j = num_bits.length-1;
+		for (var k=0; k < bits.length; k++) {
+			//for (var i=(31-bits[k][0]); i < (32-bits[k][1]); i++) {
+			for (var i=(31-bits[k][1]); i >= (31-bits[k][0]); i--) {
+				if (j >= 0) {
+					machineCode = setCharAt(machineCode, i, num_bits[j]);
+					j--;
+				}
+			}
+		}
+	}
+
+	return machineCode;
 }
 
 
@@ -192,7 +215,7 @@ function is_end_of_file (context)
  *   Load segments
  */
 
-function read_data ( context, datosCU, ret )
+function read_data_v2 ( context, datosCU, ret )
 {
            var seg_name = asm_getToken(context) ;
 
@@ -211,7 +234,7 @@ function read_data ( context, datosCU, ret )
            asm_nextToken(context) ;
 
 	   // Loop while token read is not a segment directive (.text/.data/...)
-	   while (!is_directive_segment(asm_getToken(context)) && !is_end_of_file(context))
+	   while (!wsasm_is_directive_segment(asm_getToken(context)) && !is_end_of_file(context))
            {
 		   //
 		   //  * etiq1: *
@@ -219,7 +242,7 @@ function read_data ( context, datosCU, ret )
 		   //
 
 		   var possible_tag = "" ;
-		   while (!is_directive_datatype(asm_getToken(context)) && !is_end_of_file(context))
+		   while (!wsasm_is_directive_datatype(asm_getToken(context)) && !is_end_of_file(context))
 		   {
                       // tagX
 		      possible_tag = asm_getToken(context) ;
@@ -282,13 +305,13 @@ function read_data ( context, datosCU, ret )
 		        (".double" == possible_datatype) )
                    {
 			// Get value size in bytes
-			var size = get_datatype_size(possible_datatype) ;
+			var size = wsasm_get_datatype_size(possible_datatype) ;
 
                         // <value> | .<directive>
 		        asm_nextToken(context) ;
                         var possible_value = asm_getToken(context) ;
 
-			while (!is_directive(asm_getToken(context)) && !is_end_of_file(context))
+			while (!wsasm_is_directive(asm_getToken(context)) && !is_end_of_file(context))
                         {
 				var label_found = false;
 
@@ -381,7 +404,7 @@ function read_data ( context, datosCU, ret )
 				    asm_nextToken(context) ;
                                 }
 
-			        if ( is_directive(asm_getToken(context)) ||
+			        if ( wsasm_is_directive(asm_getToken(context)) ||
                                      ("TAG" == asm_getTokenType(context)) ||
                                      ("." == asm_getToken(context)[0]) )
                                 {
@@ -502,7 +525,7 @@ function read_data ( context, datosCU, ret )
 		        }
                         possible_value = ret1.string ;
 
-			while (!is_directive(asm_getToken(context)) && !is_end_of_file(context))
+			while (!wsasm_is_directive(asm_getToken(context)) && !is_end_of_file(context))
                         {
 				// Word filled
                                 writememory_and_reset(ret.mp, gen, 1) ;
@@ -573,7 +596,7 @@ function read_data ( context, datosCU, ret )
 				    asm_nextToken(context);
 			        }
 
-			        if ( is_directive(asm_getToken(context)) || ("TAG" == asm_getTokenType(context)) || "." == asm_getToken(context)[0] )
+			        if ( wsasm_is_directive(asm_getToken(context)) || ("TAG" == asm_getTokenType(context)) || "." == asm_getToken(context)[0] )
 				     break ; // end loop, already read token (tag/directive)
 
                                 // <value> | .<directive>
@@ -609,7 +632,7 @@ function read_data ( context, datosCU, ret )
            ret.seg[seg_name].end = gen.seg_ptr ;  // end of segment is just last pointer value...
 }
 
-function read_text ( context, datosCU, ret )
+function read_text_v2 ( context, datosCU, ret )
 {
 	   //
 	   //  .text
@@ -647,7 +670,7 @@ function read_text ( context, datosCU, ret )
            asm_nextToken(context) ;
 
 	   // Loop while token read is not a segment directive (.text/.data/...)
-	   while (!is_directive_segment(asm_getToken(context)) && !is_end_of_file(context))
+	   while (!wsasm_is_directive_segment(asm_getToken(context)) && !is_end_of_file(context))
            {
 		// check tag or error
 		while (
@@ -803,7 +826,10 @@ function read_text ( context, datosCU, ret )
 
 				// get field information
 				var field = firmware[instruction][j].fields[i] ;
-				var size  = field.startbit - field.stopbit + 1 ;
+				if (field.bits !== undefined)
+					var size = bits_size(field.bits) ;
+				else
+					var size = field.startbit - field.stopbit + 1 ;
 
 				var label_found = false ;
 				var sel_found   = false ;
@@ -814,6 +840,7 @@ function read_text ( context, datosCU, ret )
 				    // 0xFFFFF,... | 23, 'b', ...
 				    case "address":
 				    case "inm":
+					case "imm":
 					 if (isPseudo && ("sel" == value))
                                          {
 						counter++;
@@ -1006,6 +1033,7 @@ function read_text ( context, datosCU, ret )
                                                          free_space:  (label_found ? false : res[1]),
                                                          startbit:    field.startbit,
                                                          stopbit:     field.stopbit,
+                                                         bits:        field.bits,
                                                          rel:         (label_found ? field.address_type : false),
                                                          islabel:     label_found,
 						         field_name:  value,
@@ -1128,10 +1156,20 @@ function read_text ( context, datosCU, ret )
 
 		var machineCode = reset_assembly(firmware[instruction][candidate].nwords);
 
-		// replace CO and COP in machine code
-		machineCode = assembly_co_cop(machineCode,
-                                              firmware[instruction][candidate].co,
-                                              firmware[instruction][candidate].cop);
+		if ( firmware[instruction][candidate].co !== false )
+		{
+			// replace OC and EOC in machine code
+			machineCode = assembly_co_cop(machineCode,
+											firmware[instruction][candidate].co,
+											firmware[instruction][candidate].cop);
+		}
+		else
+		{
+			// replace CO and COP in machine code
+			machineCode = assembly_oc_eoc_v2(machineCode,
+											firmware[instruction][candidate].oc,
+											firmware[instruction][candidate].eoc);
+		}
 
 		// store candidate fields in machine code
                 var l_addr = "" ;
@@ -1146,6 +1184,7 @@ function read_text ( context, datosCU, ret )
 						   addr:         seg_ptr,
 						   startbit:     binaryAux[candidate][i].startbit,
 						   stopbit:      binaryAux[candidate][i].stopbit,
+						   bits:         binaryAux[candidate][i].bits,
 						   rel:          binaryAux[candidate][i].rel,
 						   nwords:       firmware[instruction][candidate].nwords,
 						   labelContext: asm_getLabelContext(context),
@@ -1157,10 +1196,11 @@ function read_text ( context, datosCU, ret )
 			// replace instruction and fields in machine code
 			else
                         {
-			    machineCode = assembly_replacement(	machineCode,
+			    machineCode = assembly_replace_v2(	machineCode,
 								binaryAux[candidate][i].num_bits,
 								binaryAux[candidate][i].startbit-(-1),
 								binaryAux[candidate][i].stopbit,
+								binaryAux[candidate][i].bits,
 								binaryAux[candidate][i].free_space ) ;
                         }
 		}
@@ -1173,6 +1213,7 @@ function read_text ( context, datosCU, ret )
 			{
 				case "address":
 				case "inm":
+				case "imm":
 				case "reg":
 				case "(reg)":
 					s_def = s_def + " " + s[j];
@@ -1192,20 +1233,37 @@ function read_text ( context, datosCU, ret )
                 var new_ref = ref ;
 		while (false === ref.isPseudoinstruction)
 		{
-			var new_ref = datosCU.hash_cocop[firmware[instruction][candidate].co] ;
-			if (new_ref.withcop)
-			     new_ref = new_ref[firmware[instruction][candidate].cop] ;
-			else new_ref = new_ref.i ;
+			if ( firmware[instruction][candidate].co !== false ) {
+				var new_ref = datosCU.hash_cocop[firmware[instruction][candidate].co] ;
+				if (new_ref.withcop)
+					new_ref = new_ref[firmware[instruction][candidate].cop] ;
+				else new_ref = new_ref.i ;
 
-                        // <TO-CHECK>:
-                        if (typeof new_ref == "undefined") {
-			    ref = datosCU.hash_cocop[firmware[instruction][candidate].co] ;
-			    ref = ref.i ;
-                            break ;
-		        }
-                        // </TO-CHECK>:
+							// <TO-CHECK>:
+							if (typeof new_ref == "undefined") {
+					ref = datosCU.hash_cocop[firmware[instruction][candidate].co] ;
+					ref = ref.i ;
+								break ;
+					}
+							// </TO-CHECK>:
 
-                        ref = new_ref ;
+							ref = new_ref ;
+			} else {
+				var new_ref = datosCU.hash_oceoc[context.firmware[instruction][candidate].oc] ;
+				if (new_ref.witheoc)
+					new_ref = new_ref[context.firmware[instruction][candidate].eoc] ;
+				else new_ref = new_ref.i ;
+
+				// <TO-CHECK>:
+				if (typeof new_ref == "undefined") {
+					ref = datosCU.hash_oceoc[context.firmware[instruction][candidate].oc] ;
+					ref = ref.i ;
+					break ;
+				}
+				// </TO-CHECK>:
+
+				ref = new_ref ;
+			}
 		}
 
 		// process machine code with several words...
@@ -1268,7 +1326,7 @@ function read_text ( context, datosCU, ret )
  *  Compile assembly
  */
 
-function simlang_compile_v1 (text, datosCU)
+function simlang_compile_v2 (text, datosCU)
 {
            var context = {} ;
 	   context.line           	= 1 ;
@@ -1279,6 +1337,7 @@ function simlang_compile_v1 (text, datosCU)
 	   context.labelsNotFound 	= [] ;
 	   context.instrucciones  	= [] ;
 	   context.co_cop         	= {} ;
+	   context.oc_eoc         	= {} ;
 	   context.registers      	= [] ;
            context.text           	= text ;
 	   context.tokens         	= [] ;
@@ -1303,6 +1362,8 @@ function simlang_compile_v1 (text, datosCU)
 						  nwords:              parseInt(aux.nwords),
 						  co:                  (typeof aux.co !== "undefined" ? aux.co : false),
 						  cop:                 (typeof aux.cop !== "undefined" ? aux.cop : false),
+						  oc:                  (typeof aux.oc !== "undefined" ? aux.oc : false),
+						  eoc:                 (typeof aux.eoc !== "undefined" ? aux.eoc : false),
 						  fields:              (typeof aux.fields !== "undefined" ? aux.fields : false),
 						  signature:           aux.signature,
 						  signatureUser:       (typeof aux.signatureUser !== "undefined" ? aux.signatureUser : aux.name ),
@@ -1333,12 +1394,12 @@ function simlang_compile_v1 (text, datosCU)
 	   }
 
           var ret = {};
-          ret.mp  = {} ;
+          ret.mp                  = {} ;
 	  ret.seg                 = sim_segments ;
           ret.hash_seg_rev        = [] ;
-	  ret.labels              = {} ; // [addr] = {name, addr, startbit, stopbit}
           ret.labels_asm          = {} ;
           ret.hash_labels_asm_rev = {} ;
+	  ret.labels              = {} ; // [addr] = {name, addr, startbit, stopbit}
 
 	  data_found = false;
 	  text_found = false;
@@ -1359,12 +1420,12 @@ function simlang_compile_v1 (text, datosCU)
 	       }
 
 	       if ("data" == ret.seg[segname].kindof) {
-		   read_data(context, datosCU, ret);
+		   read_data_v2(context, datosCU, ret);
 		   data_found = true;
 	       }
 
 	       if ("text" == ret.seg[segname].kindof) {
-		   read_text(context, datosCU, ret);
+		   read_text_v2(context, datosCU, ret);
 		   text_found = true;
 	       }
 
@@ -1452,10 +1513,11 @@ function simlang_compile_v1 (text, datosCU)
                 }
 
 		// Store field in machine code
-		machineCode = assembly_replacement(machineCode,
+		machineCode = assembly_replace_v2(machineCode,
                                                    num_bits,
                                                    ret.labels[i].startbit-(-1),
                                                    ret.labels[i].stopbit,
+                                                   ret.labels[i].bits,
                                                    free_space) ;
 
 		// process machine code with several words...

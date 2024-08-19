@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -223,6 +223,16 @@
              var ddet = document.getElementById(div_target_name) ;
 	     var udiv = document.getElementById(div_url_name) ;
 	     var idiv = document.getElementById(div_info_name) ;
+
+             // prepare assembly code...
+             var SIMWARE = get_simware() ;
+             var fasm = inputasm.getValue() ;
+             var ret  = wsasm_src2src(SIMWARE, fasm, { instruction_comma: true }) ;
+             if (ret.error != null) { 
+                 return ret;
+             }
+
+             fasm = ret.src_alt ; // normalized syntax
 
              // do remote flash...
              idiv.value = 'Flashing...\n' ;

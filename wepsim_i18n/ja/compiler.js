@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -39,6 +39,7 @@
 		'NO MAIN OR KMAIN':		'タグ「主」または「kmain」はテキスト・セグメント（単数または複数）で定義されていません。プログラムを実行するために、これらのタグのうちの少なくとも一つを定義することが義務付けられています',
 		'UNKNOWN 1':			'不明なエラーがフィールドタイプのために（1）発生しました：',
 		'UNKNOWN 2':			'予期しないエラー（2）',
+	        'EMPTY OBJECT CODE':	        '空のオブジェクトコード',
 		'REMEMBER FORMAT USED':		'これは、次の場合に使用される命令形式です。 ',
 		'REMEMBER I. FORMAT':		'命令フォーマットは次のように定義されていることに注意してください：',
 		'SEVERAL CANDIDATES':		'命令とフィールドは、複数のマイクロプログラムで一致します。マイクロコードを確認してください。現在、命令フォーマットを指定できます。',

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -39,6 +39,7 @@
 		'NO MAIN OR KMAIN':		'Метки «главный» или «KMAIN» не определены в текстовом сегменте (с). В обязательном порядке определить по крайней мере один из этих тегов для того, чтобы выполнить программу',
 		'UNKNOWN 1':			'Произошла неизвестная ошибка (1) для типа поля: ',
 		'UNKNOWN 2':			'Неожиданная ошибка (2)',
+	        'EMPTY OBJECT CODE':	        'Пустой объектный код',
 		'REMEMBER FORMAT USED':		'Это формат инструкций, используемый для ',
 		'REMEMBER I. FORMAT':		'Помните, что формат команды был определен как: ',
 		'SEVERAL CANDIDATES':		'Инструкция и полей совпадают с более чем одной микропрограммой. Пожалуйста, проверьте микрокод. В настоящее время формат команды может быть: ',

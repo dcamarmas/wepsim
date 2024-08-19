@@ -2,13 +2,18 @@
 # WepSIM (https://wepsim.github.io/wepsim/)
 #
 
-firmware_version=2,
+firmware {
+   version  = 2,
+   rel_mult = 2,
+   endian   = little
+}
+
 begin
 {
    fetch:   # IR <- MP[PC]
               (IMR),
             # Decode, PC <- PC + 4
-              (AluOp=1010, M3=01, M4, PCWrite, IRWrite),
+              (AluOp=1010, M3=10, M4, PCWrite, IRWrite),
             # Control Unit signal
               (CU=10)
 }
@@ -22,9 +27,7 @@ add rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 + r3',
       {
-          (),
-          (M2, M3=0, AluOp=1010, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=1010, M5=0, RW, CU=11)
       }
 }
 
@@ -37,9 +40,7 @@ addi rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 + SignEx(imm)',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, M5=0, RW, CU=11)
       }
 }
 
@@ -52,9 +53,7 @@ addu rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 + imm',
       {
-          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=10000, WOut),
-          (RW, CU=11)
+          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=10000, M5=0, RW, CU=11)
       }
 }
 
@@ -67,9 +66,7 @@ and rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 & r3',
       {
-          (),
-          (M2, M3=0, AluOp=0001, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=0001, M5=0, RW, CU=11)
       }
 }
 
@@ -82,9 +79,7 @@ andi rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 & imm',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=0001, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=0001, M5=0, RW, CU=11)
       }
 }
 
@@ -95,8 +90,7 @@ auipc rd offset {
       imm(31:12)=offset,
       help='rd = pc + (offset << 12)',
       {
-          (SE_IMM=1, OFFSET=1100, SIZE=10100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=1100, SIZE=10100, GEN_IMM=1, M2=0, M3=11, AluOp=1010, M5=0, RW, CU=11)
       }
 }
 
@@ -109,7 +103,7 @@ beq rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if ($r1 == $r2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=1011),
           (CU=111, MADDR=bck2ftch),
@@ -127,7 +121,7 @@ bge rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if (rs1 >= rs2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=1011),
           (CU=100, MADDR=bck3ftch),
@@ -145,7 +139,7 @@ bgeu rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if (rs1 >= rs2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=10001),
           (CU=100, MADDR=bck4ftch),
@@ -164,7 +158,7 @@ blt rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if ($r1 < $r2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=1011),
           (CU=101, MADDR=bck5ftch),
@@ -182,7 +176,7 @@ bltu rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if ($r1 < $r2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=10001),
           (CU=101, MADDR=bck6ftch),
@@ -200,7 +194,7 @@ bne rs1 rs2 offset {
       address-rel(11:8|30:25|7|31)=offset,
       help='if ($r1 != $r2) pc += offset',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, WOut),
+          (SE_IMM=1, OFFSET=0, SIZE=1100, X2_IMM=1, GEN_IMM=1, M2=0, M3=11, AluOp=1010, WOut),
           (),
           (M2, M3=0, AluOp=1011),
           (CU=110, MADDR=bck7ftch),
@@ -219,12 +213,10 @@ div rd rs1 rs2 {
       help='reg1 = reg2 / reg3',
       {
           #if (rs2 == 0)
-          (),
           (M2, M3=1, AluOp=1100),
           (CU=111, MADDR=fpe1),
           # rd = rs1 / rs2, go fetch
-          (M2, M3=0, AluOp=1101, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=1101, M5=0, RW, CU=11)
     fpe1: # future work: to signal exception so it can be handled
           (CU=11)
       }
@@ -240,12 +232,10 @@ divu rd rs1 rs2 {
       help='reg1 = ux(reg2) / ux(reg3)',
       {
           #if (rs2 == 0)
-          (),
           (M2, M3=1, AluOp=1100),
           (CU=111, MADDR=fpe2),
           # rd = rs1 / rs2, go fetch
-          (M2, M3=0, AluOp=10011, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=10011, M5=0, RW, CU=11)
     fpe2: # future work: to signal exception so it can be handled
           (CU=11)
       }
@@ -295,9 +285,8 @@ jal rd offset {
       address-rel(30:21|20|19:12|31)=offset,
       help='rd = pc; pc = pc + sext(offset)',
       {
-          (M2=0, AluOp=11110, WOut),
-          (RW),
-          (SE_IMM=1, OFFSET=0, SIZE=10100, GEN_IMM=1, M2=0, M3=10, AluOp=1010, M4, PCWrite, CU=11)
+          (M2=0, AluOp=11110, M5=0, RW) # ra <- PC
+          (SE_IMM=1, OFFSET=0, SIZE=10000, GEN_IMM=1, X2_IMM=1, M2=0, M3=11, AluOp=1010, M4, PCWrite, CU=11)
       }
 }
 
@@ -311,9 +300,8 @@ jalr rd rs1 offset {
       address-rel(31:20)=offset,
       help='rd = pc; pc = rs1 + offset',
       {
-          (M2=0, AluOp=11110, WOut),
-          (RW),
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=10, AluOp=1010, M4, PCWrite, CU=11)
+          (M2=0, AluOp=11110, M5=0, RW)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, M4, PCWrite, CU=11)
       }
 }
 
@@ -326,8 +314,7 @@ lb rd offset(rs1) {
       address-abs(31:20)=offset,
       help='rd = (00, 00, 00, MEM[rs1 + offset])',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, SE=1, WBE=1, DMR, RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMR, M5=1, SE=1, WBE=1, RW, CU=11)
       }
 }
 
@@ -340,8 +327,7 @@ lbu rd offset(rs1) {
       address-abs(31:20)=offset,
       help='rd = (00, 00, 00, MEM[rs1 + offset])',
       {
-          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, SE=0, WBE=1, DMR, RW, CU=11)
+          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMR, M5=1, SE=0, WBE=1, RW, CU=11)
       }
 }
 
@@ -354,8 +340,7 @@ lh rd offset(rs1) {
       address-abs(31:20)=offset,
       help='rd = (00, 00, MEM[rs1+offset+1], MEM[rs1+offset])',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, SE=1, WBE=10, DMR, RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMR, M5=1, SE=1, WBE=10, RW, CU=11)
       }
 }
 
@@ -368,8 +353,7 @@ lhu rd offset(rs1) {
       address-abs(31:20)=offset,
       help='rd = (00, 00, MEM[rs1+offset+1], MEM[rs1+offset])',
       {
-          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, SE=0, WBE=10, DMR, RW, CU=11)
+          (SE_IMM=0, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMR, M5=1, SE=0, WBE=10, RW, CU=11)
       }
 }
 
@@ -380,8 +364,7 @@ lui rd imm {
       imm(31:12)=imm,
       help='rd = (imm << 12)',
       {
-          (SE_IMM=1, OFFSET=1100, SIZE=10100, GEN_IMM=1, M2, M3=10, AluOp=11111, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=1100, SIZE=10100, GEN_IMM=1, M2, M3=11, AluOp=11111, M5=0, RW, CU=11)
       }
 }
 
@@ -394,8 +377,7 @@ lw rd offset(rs1) {
       address-abs(31:20)=offset,
       help='rd = (MEM[rs1+offset+3] .. MEM[rs1+offset])',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010, DMR, RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMR, M5=1, RW, CU=11)
       }
 }
 
@@ -408,9 +390,7 @@ mul rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 * r3',
       {
-          (),
-          (M2, M3=0, AluOp=1100, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=1100, M5=0, RW, CU=11)
       }
 }
 
@@ -498,9 +478,7 @@ or rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 | r3',
       {
-          (),
-          (M2, M3=0, AluOp=0010, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=0010, M5=0, RW, CU=11)
       }
 }
 
@@ -513,9 +491,7 @@ ori rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 | imm',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=0010, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=0010, M5=0, RW, CU=11)
       }
 }
 
@@ -528,9 +504,7 @@ rem rd rs1 rs2 {
       reg(24:20)=rs2,
       help='reg1 = reg2 % reg3',
       {
-          (),
-          (M2, M3=0, AluOp=1110, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=1110, M5=0, RW, CU=11)
       }
 }
 
@@ -566,9 +540,7 @@ sll rd rs1 rs2 {
       reg(24:20)=rs2,
       help='rd = rs1 <<< rs2',
       {
-            (),
-            (M2, M3=0, AluOp=111, WOut),
-            (RW, CU=11)
+            (M2, M3=0, AluOp=111, M5=0, RW, CU=11)
       }
 }
 
@@ -581,9 +553,7 @@ slli rd rs1 imm {
       imm(24:20)=imm,
       help='rd = (rs1 << imm)',
       {
-            (SE_IMM=1, OFFSET=0, SIZE=101, GEN_IMM=1),
-            (M2, M3=10, AluOp=111, WOut),
-            (RW, CU=11)
+            (SE_IMM=1, OFFSET=0, SIZE=101, GEN_IMM=1, M2, M3=11, AluOp=111, M5=0, RW, CU=11)
       }
 }
 
@@ -596,7 +566,6 @@ slt rd rs1 rs2 {
       reg(24:20)=rs2,
       help='rd = (rs1 < rs2) ? 1 : 0',
       {
-          (),
           (M2, M3=0, AluOp=1011, M1, RW, CU=11),
       }
 }
@@ -635,7 +604,6 @@ sltu rd rs1 rs2 {
       reg(24:20)=rs2,
       help='rd = (ux(rs1) < ux(rs2)) ? 1 : 0',
       {
-          (),
           (M2, M3=0, AluOp=10001, M1, RW, CU=11),
       }
 }
@@ -671,9 +639,7 @@ sra rd rs1 rs2 {
       reg(24:20)=rs2,
       help='rd = rs1 >> rs2',
       {
-            (),
-            (M2, M3=0, AluOp=110, WOut),
-            (RW, CU=11)
+            (M2, M3=0, AluOp=110, M5=0, RW, CU=11)
       }
 }
 
@@ -686,9 +652,7 @@ srai rd rs1 imm {
       imm(24:20)=imm,
       help='rd = (rs1 >> imm)',
       {
-            (SE_IMM=1, OFFSET=0, SIZE=101, GEN_IMM=1),
-            (M2, M3=10, AluOp=110, WOut),
-            (RW, CU=11)
+            (SE_IMM=1, OFFSET=0, SIZE=101, GEN_IMM=1, M2, M3=11, AluOp=110, M5=0, RW, CU=11)
       }
 }
 
@@ -701,9 +665,7 @@ srl rd rs1 rs2 {
       reg(24:20)=rs2,
       help='rd = rs1 >>> rs2',
       {
-            (),
-            (M2, M3=0, AluOp=101, WOut),
-            (RW, CU=11)
+            (M2, M3=0, AluOp=101, M5=0, RW, CU=11)
       }
 }
 
@@ -738,9 +700,7 @@ sub rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 + r3',
       {
-          (),
-          (M2, M3=0, AluOp=1011, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=1011, M5=0, RW, CU=11)
       }
 }
 
@@ -753,9 +713,7 @@ subi rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 - SignEx(imm)',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1011, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1011, M5=0, RW, CU=11)
       }
 }
 
@@ -768,11 +726,8 @@ sb rs2 offset(rs1) {
       address-rel(11:7|31:25)=offset,
       help='MEM[rs1 + offset] = rs2/8',
       {
-          (),
           (M2, M3=0, AluOp=11111, WOut),
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010),
-          (WBE=1, DMW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, WBE=1, DMW, CU=11)
       }
 }
 
@@ -785,11 +740,8 @@ sh rs2 offset(rs1) {
       address-rel(11:7|31:25)=offset,
       help='MEM[rs1+offset+1 .. rs1+offset] = rs2/16',
       {
-          (),
           (M2, M3=0, AluOp=11111, WOut),
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010),
-          (WBE=10, DMW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, WBE=10, DMW, CU=11)
       }
 }
 
@@ -802,11 +754,8 @@ sw rs2 offset(rs1) {
       address-rel(11:7|31:25)=offset,
       help='MEM[rs1+offset+3 .. rs1+offset] = rs2',
       {
-          (),
           (M2, M3=0, AluOp=11111, WOut),
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=1010),
-          (DMW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=1010, DMW, CU=11)
       }
 }
 
@@ -819,9 +768,7 @@ xor rd rs1 rs2 {
       reg(24:20)=rs2,
       help='r1 = r2 ^ r3',
       {
-          (),
-          (M2, M3=0, AluOp=0100, WOut),
-          (RW, CU=11)
+          (M2, M3=0, AluOp=0100, M5=0, RW, CU=11)
       }
 }
 
@@ -834,83 +781,81 @@ xori rd rs1 imm {
       imm(31:20)=imm,
       help='rd = rs1 ^ imm',
       {
-          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1),
-          (M2, M3=10, AluOp=0100, WOut),
-          (RW, CU=11)
+          (SE_IMM=1, OFFSET=0, SIZE=1100, GEN_IMM=1, M2, M3=11, AluOp=0100, M5=0, RW, CU=11)
       }
 }
 
 pseudoinstructions
 {
     # beqz rs1, offset        beq rs, x0, offset        Branch if = zero
-    beqz rs=reg, offset=inm
+    beqz rs=reg, offset=imm
     {
         beq rs, zero, offset
     }
 
     # bnez rs1, offset        bne rs, x0, offset        Branch if ≠ zero
-    bnez rs=reg, offset=inm
+    bnez rs=reg, offset=imm
     {
         bne rs, zero, offset
     }
 
     # blez rs1, offset        bge x0, rs, offset        Branch if ≤ zero
-    blez rs=reg, offset=inm
+    blez rs=reg, offset=imm
     {
         bge zero, rs, offset
     }
 
     # bgez rs1, offset        bge rs, x0, offset        Branch if ≥ zero
-    bgez rs=reg, offset=inm
+    bgez rs=reg, offset=imm
     {
         bge rs, zero, offset
     }
 
     # bltz rs1, offset        blt rs, x0, offset        Branch if < zero
-    bltz rs=reg, offset=inm
+    bltz rs=reg, offset=imm
     {
         blt rs, zero, offset
     }
 
     # bgtz rs1, offset        blt x0, rs, offset        Branch if > zero
-    bgtz rs=reg, offset=inm
+    bgtz rs=reg, offset=imm
     {
         blt zero, rs, offset
     }
 
     # bgt rs, rt, offset        blt rt, rs, offset        Branch if >
-    bgt rs=reg, rt=reg, offset=inm
+    bgt rs=reg, rt=reg, offset=imm
     {
         blt rt, rs, offset
     }
 
     # ble rs, rt, offset        bge rt, rs, offset        Branch if ≤
-    ble rs=reg, rt=reg, offset=inm
+    ble rs=reg, rt=reg, offset=imm
     {
         bge rt, rs, offset
     }
 
     # bgtu rs, rt, offset        bltu rt, rs, offset        Branch if >, unsigned
-    bgtu rs=reg, rt=reg, offset=inm
+    bgtu rs=reg, rt=reg, offset=imm
     {
         bltu rt, rs, offset
     }
 
     # bleu rs, rt, offset        bltu rt, rs, offset        Branch if ≤, unsigned
-    bleu rs=reg, rt=reg, offset=inm
+    bleu rs=reg, rt=reg, offset=imm
     {
         bgeu rt, rs, offset
     }
 
     # li rd, expression        (several expansions)        Load immediate
-    li rd=reg, expression=inm
+    li rd=reg, expression=imm
     {
         lui  rd,     sel(31,12,expression)
         addi rd, rd, sel(11,0,expression)
     }
 
     # la rd, label        (several expansions)        Load address
-    la rd=reg, label=inm
+    la rd=reg, label=imm
     {
         lui  rd,     sel(31,12,label)
         addu rd, rd, sel(11,0,label)
@@ -941,13 +886,13 @@ pseudoinstructions
     }
 
     # j offset        jal x0, offset        Jump
-    j offset=inm
+    j offset=imm
     {
         jal zero, offset
     }
 
     # jal offset        jal x1, offset        Jump register
-    #jal offset=inm
+    #jal offset=imm
     #{
     #    jal ra, offset
     #}

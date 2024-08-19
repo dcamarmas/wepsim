@@ -55,7 +55,7 @@ begin
 #
 
 ecall {
-     co=111111,
+     co=000001,
      nwords=1,
      help='system call',
      {
@@ -68,7 +68,7 @@ ecall {
 }
 
 sret {
-     co=111111,
+     co=000010,
      nwords=1,
      help='return from event (interruption, exception, syscall)',
      {
@@ -92,10 +92,10 @@ sret {
 #
 
 in reg val {
-     co=111111,
+     co=000011,
      nwords=1,
      reg=reg(25,21),
-     val=inm(15,0),
+     val=imm(15,0),
      help='reg = device_registers[val]',
      {
          (SE=0, OFFSET=0, SIZE=10000, T3=1, C0=1),
@@ -105,10 +105,10 @@ in reg val {
 }
 
 out reg val {
-     co=111111,
+     co=000100,
      nwords=1,
      reg=reg(25,21),
-     val=inm(15,0),
+     val=imm(15,0),
      help='device_register[val] = reg',
      {
          (SE=0, OFFSET=0,   SIZE=10000,   T3=1, C0=1),
@@ -124,7 +124,7 @@ out reg val {
 
 # RDCYCLE rd      Load clock cycles     rd ← ux(clock_cycles_acc)
 rdcycle reg1  {
-      co=111111,
+      co=000101,
       nwords=1,
       reg1=reg(25,21),
       help='reg1 = load accumulated clock cycles',
@@ -142,10 +142,10 @@ rdcycle reg1  {
 
 #  LUI rd,imm         Load Upper Immediate                     rd ← imm << 12
 lui rd inm {
-      co=111111,
+      co=000110,
       nwords=1,
       rd=reg(25,21),
-      inm=inm(19,0),
+      inm=imm(19,0),
       help='rd = (inm << 12)',
       {
           (SE=1, OFFSET=0, SIZE=10100, T3, C4),       # RT1 <- IR/inm
@@ -159,10 +159,10 @@ lui rd inm {
 
 #  AUIPC rd,offset         Add Upper Immediate to PC         rd ← pc + (offset << 12)
 auipc rd offset {
-      co=111111,
+      co=000111,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(19,0),
+      offset=imm(19,0),
       help='rd = pc + (offset << 12)',
       {
           (SE=1, OFFSET=0, SIZE=10100, T3, C4),       # RT1 <- offset
@@ -180,33 +180,35 @@ auipc rd offset {
 #  JAL rd,offset        Jump and Link                       rd ← pc + length(inst)
 #                                               pc ← pc + offset
 jal rd offset {
-      co=111111,
+      co=001000,
       nwords=1,
       rd=reg(25,21),
       offset=address(19,0)rel,
-      help='rd = pc; pc = pc + sext(offset)',
+      help='rd = pc; pc = pc + 4*sext(offset)',
       {
-          (T2, MR=0, SelC=10101, LC, C5),                  # (rd, RT2) <- PC
+          (T2, MR=0, SelC=10101, LC, C5),               # (rd, RT2) <- PC
           (SE=1, OFFSET=0, SIZE=10100, T3, C4),         #       RT1 <- offset
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),           #       RT1 <- 4*RT1
           (MA=1, MB=1, MC=1, SelCop=1010, T6, M2=0, C2, A0=1, B=1, C=0)
       }
 }
 
-#  JALR rd,rs1,offset   Jump and Link Register              rd ← pc + length(inst)
-#                                              pc ← (rs1 + offset) & -2
+#  JALR rd,rs1,offset   Jump and Link Register      rd ← pc + length(inst)
+#                                                   pc ← (rs1 + offset) & -2
 jalr rd rs1 offset {
-      co=111111,
+      co=001001,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
       offset=address(15,0)rel,
-      help='rd = pc; pc = rs1 + offset',
+      help='rd = pc; pc = rs1 + 4*offset',
       {
-          (T2, SelC=10101, MR=0, LC),                         # rd  <- pc
+          (T2, SelC=10101, MR=0, LC),                             # rd  <- pc
           (EXCODE=0, T11, MR=1, SelC=0, LC=1),
-          (SE=1, OFFSET=0, SIZE=1100, T3, C5),                    # RT2 <- sign_ext(offset)
-          (MR=0, SelA=10000, MA=0,  MB=1, MC=1, SelCop=1010, T6, C5), # RT2 <- offset + rs1
-          (EXCODE=1, T11, C4),                                # RT1 <- 1
+          (SE=1, OFFSET=0, SIZE=1100, T3, C4),                    # RT1 <- sign_ext(offset)
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),                     # RT1 <- 4*RT1
+          (MR=0, SelB=10000, MB=0,  MA, MC, SelCop=1010, T6, C5), # RT2 <- offset + rs1
+          (EXCODE=1, T11, C4),                                    # RT1 <- 1
           (MA=1, MC=1, SelCop=11, T6, C4),                        # RT1 <- ~1 (0xFFFFFFFE)
           (MA=1, MB=1, MC=1, SelCop=1, T6, M2=0, C2),             # pc <- RT2 & 0xFFFFFFFE
           (EXCODE=0, T11, MR=1, SelC=0, LC=1, A0=1, B=1, C=0)
@@ -215,19 +217,20 @@ jalr rd rs1 offset {
 
 #  BEQ rs1,rs2,offset         Branch Equal                         if rs1 = rs2 then pc ← pc + offset
 beq rs1 rs2 offset {
-      co=111111,
+      co=001010,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (rs1 == rs2) pc += offset',
+      help='if (rs1 == rs2) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=1011, SELP=11, M7, C7),
           (A0=0, B=1, C=110, MADDR=bck2ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck2ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -236,19 +239,20 @@ bck2ftch: (T5, M7=0, C7),
 
 #  BNE rs1,rs2,offset         Branch Not Equal                     if rs1 ≠ rs2 then pc ← pc + offset
 bne rs1 rs2 offset {
-      co=111111,
+      co=001011,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (rs1 != rs2) pc += offset',
+      help='if (rs1 != rs2) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=1011, SELP=11, M7, C7),
           (A0=0, B=0, C=110, MADDR=bck3ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck3ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -257,19 +261,20 @@ bck3ftch: (T5, M7=0, C7),
 
 #  BLT rs1,rs2,offset         Branch Less Than                     if rs1 < rs2 then pc ← pc + offset
 blt rs1 rs2 offset {
-      co=111111,
+      co=001100,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (rs1 < rs2) pc += offset',
+      help='if (rs1 < rs2) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=1011, SELP=11, M7, C7),
           (A0=0, B=1, C=111, MADDR=bck5ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck5ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -278,19 +283,20 @@ bck5ftch: (T5, M7=0, C7),
 
 #  BGE rs1,rs2,offset         Branch Greater than Equal             if rs1 ≥ rs2 then pc ← pc + offset
 bge rs1 rs2 offset {
-      co=111111,
+      co=001101,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (rs1 >= rs2) pc += offset',
+      help='if (rs1 >= rs2) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=1011, SELP=11, M7, C7),
           (A0=0, B=0, C=111, MADDR=bck4ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck4ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -299,19 +305,20 @@ bck4ftch: (T5, M7=0, C7),
 
 #  BLTU rs1,rs2,offset         Branch Less Than Unsigned             if rs1 < rs2 then pc ← pc + offset
 bltu rs1 rs2 offset {
-      co=111111,
+      co=001110,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (ux(rs1) < ux(rs2)) pc += offset',
+      help='if (ux(rs1) < ux(rs2)) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=10111, SELP=11, M7, C7),
           (A0=0, B=1, C=111, MADDR=bck6ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck6ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -320,19 +327,20 @@ bck6ftch: (T5, M7=0, C7),
 
 #  BGEU rs1,rs2,offset         Branch Greater than Equal Unsigned         if rs1 ≥ rs2 then pc ← pc + offset
 bgeu rs1 rs2 offset {
-      co=111111,
+      co=001111,
       nwords=1,
       rs1=reg(25,21),
       rs2=reg(20,16),
       offset=address(15,0)rel,
-      help='if (ux(rs1) >= ux(rs2)) pc += offset',
+      help='if (ux(rs1) >= ux(rs2)) pc += 4*offset',
       {
           (T8, C5),
           (SELA=10101, SELB=10000, MC=1, SELCOP=10111, SELP=11, M7, C7),
           (A0=0, B=0, C=111, MADDR=bck7ftch),
           (T5, M7=0, C7),
-          (T2, C4),
-          (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+          (T2, C5),
+          (SE=1, OFFSET=0, SIZE=10000, T3, C4),
+          (MA=1, MB=10, MC=1, SELCOP=1100, T6, C4),
           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
 bck7ftch: (T5, M7=0, C7),
           (A0=1, B=1, C=0)
@@ -341,10 +349,10 @@ bck7ftch: (T5, M7=0, C7),
 
 #  LB rd,offset(rs1)         Load Byte                         rd ← s8[rs1 + offset]
 lb rd offset(rs1) {
-      co=111111,
+      co=010000,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='rd = (00, 00, 00, MEM[rs1 + offset])',
       {
@@ -357,10 +365,10 @@ lb rd offset(rs1) {
 
 #  LH rd,offset(rs1)         Load Half                         rd ← s16[rs1 + offset]
 lh rd offset(rs1) {
-      co=111111,
+      co=010001,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='rd = (00, 00, MEM[rs1+offset+1], MEM[rs1+offset])',
       {
@@ -373,10 +381,10 @@ lh rd offset(rs1) {
 
 #  LW rd,offset(rs1)         Load Word                         rd ← s32[rs1 + offset]
 lw rd offset(rs1) {
-      co=111111,
+      co=010010,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='rd = (MEM[rs1+offset+3] .. MEM[rs1+offset])',
       {
@@ -389,10 +397,10 @@ lw rd offset(rs1) {
 
 #  LBU rd,offset(rs1)         Load Byte Unsigned                     rd ← u8[rs1 + offset]
 lbu rd offset(rs1) {
-      co=111111,
+      co=010011,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='rd = (00, 00, 00, ux(MEM[rs1 + offset]))',
       {
@@ -405,10 +413,10 @@ lbu rd offset(rs1) {
 
 #  LHU rd,offset(rs1)         Load Half Unsigned                     rd ← u16[rs1 + offset]
 lhu rd offset(rs1) {
-      co=111111,
+      co=010100,
       nwords=1,
       rd=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='rd = (00, 00, ux(MEM[rs1+offset+1]), ux(MEM[rs1+offset]))',
       {
@@ -421,10 +429,10 @@ lhu rd offset(rs1) {
 
 #  SB rs2,offset(rs1)         Store Byte                         u8[rs1 + offset] ← rs2
 sb rs2 offset(rs1) {
-      co=111111,
+      co=010101,
       nwords=1,
       rs2=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='MEM[rs1 + offset] = rs2/8',
       {
@@ -437,10 +445,10 @@ sb rs2 offset(rs1) {
 
 #  SH rs2,offset(rs1)         Store Half                         u16[rs1 + offset] ← rs2
 sh rs2 offset(rs1) {
-      co=111111,
+      co=010110,
       nwords=1,
       rs2=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='MEM[rs1+offset+1 .. rs1+offset] = rs2/16',
       {
@@ -453,10 +461,10 @@ sh rs2 offset(rs1) {
 
 #  SW rs2,offset(rs1)         Store Word                         u32[rs1 + offset] ← rs2
 sw reg1 val(reg2) {
-      co=111111,
+      co=010111,
       nwords=1,
       reg1 = reg(25,21),
-      val  = inm(15,0),
+      val  = imm(15,0),
       reg2 = reg(20,16),
       help='MEM[rs1+offset+3 .. rs1+offset] = rs2',
       {
@@ -469,10 +477,10 @@ sw reg1 val(reg2) {
 
 #  SBU rs2,offset(rs1)         Store Byte Unsigned                    u8[rs1 + offset] ← rs2
 sbu rs2 offset(rs1) {
-      co=111111,
+      co=011000,
       nwords=1,
       rs2=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='MEM[rs1+offset] = (00, 00, 00, rs2/8)',
       {
@@ -485,10 +493,10 @@ sbu rs2 offset(rs1) {
 
 #  SHU rs2,offset(rs1)         Store Half Unsigned                    u16[rs1 + offset] ← rs2
 shu rs2 offset(rs1) {
-      co=111111,
+      co=011001,
       nwords=1,
       rs2=reg(25,21),
-      offset=inm(15,0),
+      offset=imm(15,0),
       rs1=reg(20,16),
       help='MEM[rs1+offset+1 .. rs1+offset] = rs2/16',
       {
@@ -501,11 +509,11 @@ shu rs2 offset(rs1) {
 
 #  ADDI rd,rs1,imm         Add Immediate                         rd ← rs1 + sx(imm)
 addi rd rs1 inm {
-      co=111111,
+      co=011010,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(11,0),
+      inm=imm(11,0),
       help='rd = rs1 + SignEx(inm)',
       {
           (SE=1, OFFSET=0, SIZE=01100, T3=1, C4=1),
@@ -515,11 +523,11 @@ addi rd rs1 inm {
 
 #  ADDU rd,rs1,imm         Add Unsigned                         rd ← rs1 + ux(imm)
 addu rd rs1 inm {
-      co=111111,
+      co=011011,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(11,0),
+      inm=imm(11,0),
       help='rd = rs1 + UnsignEx(inm)',
       {
           (SE=0, OFFSET=0, SIZE=01100, T3=1, C4=1),
@@ -529,11 +537,11 @@ addu rd rs1 inm {
 
 #  SLTI rd,rs1,imm         Set Less Than Immediate             rd ← sx(rs1) < sx(imm)
 slti rd rs1 inm {
-      co=111111,
+      co=011100,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = (rs1 < inm) ? 1 : 0',
       native,
       {
@@ -554,11 +562,11 @@ slti rd rs1 inm {
 
 #  SLTIU rd,rs1,imm         Set Less Than Immediate Unsigned         rd ← ux(rs1) < ux(imm)
 sltiu rd rs1 inm {
-      co=111111,
+      co=011101,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = (ux(rs1) < ux(inm)) ? 1 : 0',
       native,
       {
@@ -576,11 +584,11 @@ sltiu rd rs1 inm {
 
 #  XORI rd,rs1,imm         Xor Immediate                         rd ← ux(rs1) ⊕ ux(imm)
 xori rd rs1 inm {
-      co=111111,
+      co=011110,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = ux(rs1) ^ ux(inm)',
       {
           (SE=1, OFFSET=0, SIZE=10000, T3=1, C5=1),
@@ -590,11 +598,11 @@ xori rd rs1 inm {
 
 #  ORI rd,rs1,imm         Or Immediate                         rd ← ux(rs1) ∨ ux(imm)
 ori rd rs1 inm {
-      co=111111,
+      co=011111,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = rs1 | inm',
       {
           (SE=1, OFFSET=0, SIZE=10000, T3=1, C5=1),
@@ -604,11 +612,11 @@ ori rd rs1 inm {
 
 #  ANDI rd,rs1,imm         And Immediate                         rd ← ux(rs1) ∧ ux(imm)
 andi rd rs1 inm {
-      co=111111,
+      co=100000,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = rs1 & inm',
       {
           (SE=1, OFFSET=0, SIZE=10000, T3=1, C5=1),
@@ -618,11 +626,11 @@ andi rd rs1 inm {
 
 #  SLLI rd,rs1,imm         Shift Left Logical Immediate             rd ← ux(rs1) « ux(imm)
 slli rd rs1 inm {
-      co=111111,
+      co=100001,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(5,0),
+      inm=imm(5,0),
       help='rd = (rs1 << inm)',
       {
             (SE=1, OFFSET=0, SIZE=110, T3=1, C4=1),
@@ -638,11 +646,11 @@ bck10aftch: (A0=1, B=1, C=0)
 
 #  SRLI rd,rs1,imm         Shift Right Logical Immediate             rd ← ux(rs1) » ux(imm)
 srli rd rs1 inm {
-      co=111111,
+      co=100010,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(5,0),
+      inm=imm(5,0),
       help='rd = (rs1 >>> inm)',
       native,
       {
@@ -660,11 +668,11 @@ srli rd rs1 inm {
 
 #  SRAI rd,rs1,imm         Shift Right Arithmetic Immediate         rd ← sx(rs1) » ux(imm)
 srai rd rs1 inm {
-      co=111111,
+      co=100011,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
-      inm=inm(15,0),
+      inm=imm(15,0),
       help='rd = (rs1 >> inm)',
       {
             (SE=1, OFFSET=0, SIZE=110, T3=1, C4=1),
@@ -679,7 +687,7 @@ srai rd rs1 inm {
 
 #  ADD rd,rs1,rs2         Add                                 rd ← sx(rs1) + sx(rs2)
 add reg1 reg2 reg3 {
-      co=111111,
+      co=100100,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -692,7 +700,7 @@ add reg1 reg2 reg3 {
 
 #  SUB rd,rs1,rs2         Subtract                         rd ← sx(rs1) - sx(rs2)
 sub reg1 reg2 reg3 {
-      co=111111,
+      co=100101,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -705,7 +713,7 @@ sub reg1 reg2 reg3 {
 
 #  SLL rd,rs1,rs2         Shift Left Logical                     rd ← ux(rs1) « rs2
 sll rd rs1 rs2 {
-      co=111111,
+      co=100110,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -724,7 +732,7 @@ bck10bftch: (A0=1, B=1, C=0)
 
 #  SLT rd,rs1,rs2         Set Less Than                         rd ← sx(rs1) < sx(rs2)
 slt rd rs1 rs2 {
-      co=111111,
+      co=100111,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -744,7 +752,7 @@ bck8ftch: (T5, M7=0, C7),
 
 #  SLTU rd,rs1,rs2         Set Less Than Unsigned                     rd ← ux(rs1) < ux(rs2)
 sltu rd rs1 rs2 {
-      co=111111,
+      co=101000,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -764,7 +772,7 @@ bck9ftch: (T5, M7=0, C7),
 
 #  XOR rd,rs1,rs2         Xor                                 rd ← ux(rs1) ⊕ ux(rs2)
 xor reg1 reg2 reg3 {
-      co=111111,
+      co=101001,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -777,7 +785,7 @@ xor reg1 reg2 reg3 {
 
 #  SRL rd,rs1,rs2         Shift Right Logical                     rd ← ux(rs1) » rs2
 srl rd rs1 rs2 {
-      co=111111,
+      co=101010,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -796,7 +804,7 @@ srl rd rs1 rs2 {
 
 #  SRA rd,rs1,rs2         Shift Right Arithmetic                     rd ← sx(rs1) » rs2
 sra rd rs1 rs2 {
-      co=111111,
+      co=101011,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -815,7 +823,7 @@ sra rd rs1 rs2 {
 
 #  OR rd,rs1,rs2         Or                                 rd ← ux(rs1) ∨ ux(rs2)
 or reg1 reg2 reg3 {
-      co=111111,
+      co=101100,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -828,7 +836,7 @@ or reg1 reg2 reg3 {
 
 #  AND rd,rs1,rs2         And                                 rd ← ux(rs1) ∧ ux(rs2)
 and reg1 reg2 reg3 {
-      co=111111,
+      co=101101,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -841,10 +849,10 @@ and reg1 reg2 reg3 {
 
 #  FENCE pred,succ         Fence
 fence pred succ {
-      co=111111,
+      co=101110,
       nwords=1,
-      pred=inm(25,21),
-      succ=inm(15,0),
+      pred=imm(25,21),
+      succ=imm(15,0),
       {
           (A0=1, B=1, C=0)
       }
@@ -852,7 +860,7 @@ fence pred succ {
 
 #  FENCE.I             Fence Instruction
 fence.i {
-      co=111111,
+      co=101111,
       nwords=1,
       {
           (A0=1, B=1, C=0)
@@ -868,7 +876,7 @@ fence.i {
 
 # MUL rd,rs1,rs2         Multiply         rd ← ux(rs1) × ux(rs2)
 mul reg1 reg2 reg3 {
-      co=111111,
+      co=110000,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -881,7 +889,7 @@ mul reg1 reg2 reg3 {
 
 # MULH rd,rs1,rs2         Multiply High Signed         rd ← (sx(rs1) × sx(rs2)) » xlen
 mulh rd rs1 rs2 {
-      co=111111,
+      co=110001,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -905,7 +913,7 @@ mulh rd rs1 rs2 {
 
 # MULHSU rd,rs1,rs2         Multiply High Signed Unsigned         rd ← (sx(rs1) × ux(rs2)) » xlen
 mulhsu rd rs1 rs2 {
-      co=111111,
+      co=110010,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -929,7 +937,7 @@ mulhsu rd rs1 rs2 {
 
 # MULHU rd,rs1,rs2         Multiply High Unsigned Unsigned         rd ← (ux(rs1) × ux(rs2)) » xlen
 mulhu rd rs1 rs2 {
-      co=111111,
+      co=110011,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -953,7 +961,7 @@ mulhu rd rs1 rs2 {
 
 # DIV rd,rs1,rs2         Divide Signed         rd ← sx(rs1) ÷ sx(rs2)
 div reg1 reg2 reg3 {
-      co=111111,
+      co=110100,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -974,7 +982,7 @@ div reg1 reg2 reg3 {
 
 # DIVU rd,rs1,rs2         Divide Unsigned         rd ← ux(rs1) ÷ ux(rs2)
 divu rd rs1 rs2 {
-      co=111111,
+      co=110101,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -995,7 +1003,7 @@ divu rd rs1 rs2 {
 
 # REM rd,rs1,rs2         Remainder Signed         rd ← sx(rs1) mod sx(rs2)
 rem reg1 reg2 reg3 {
-      co=111111,
+      co=110110,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1008,7 +1016,7 @@ rem reg1 reg2 reg3 {
 
 # REMU rd,rs1,rs2         Remainder Unsigned         rd ← ux(rs1) mod ux(rs2)
 remu rd rs1 rs2 {
-      co=111111,
+      co=110111,
       nwords=1,
       rd=reg(25,21),
       rs1=reg(20,16),
@@ -1036,7 +1044,7 @@ remu rd rs1 rs2 {
 
 #  FADD.S rd,rs1,rs2         Add                      f(rd) ← f(rs1) + f(rs2)
 fadd.s reg1 reg2 reg3 {
-      co=111111,
+      co=111000,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1049,7 +1057,7 @@ fadd.s reg1 reg2 reg3 {
 
 #  FSUB.S rd,rs1,rs2         Subtract                 f(rd) ← f(rs1) - f(rs2)
 fsub.s reg1 reg2 reg3 {
-      co=111111,
+      co=111001,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1062,7 +1070,7 @@ fsub.s reg1 reg2 reg3 {
 
 #  FMUL.S rd,rs1,rs2         Multiply                 f(rd) ← f(rs1) * f(rs2)
 fmul.s reg1 reg2 reg3 {
-      co=111111,
+      co=111010,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1075,7 +1083,7 @@ fmul.s reg1 reg2 reg3 {
 
 #  FDIV.S rd,rs1,rs2         Divide                 f(rd) ← f(rs1) / f(rs2)
 fdiv.s reg1 reg2 reg3 {
-      co=111111,
+      co=111011,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1088,7 +1096,7 @@ fdiv.s reg1 reg2 reg3 {
 
 #  FCVT.W.S rd,rs1             Convert                 f(rd) ← sext(s32_{f32}(f(rs1)))
 fcvt.w.s reg1 reg2 {
-      co=111111,
+      co=111100,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1100,7 +1108,7 @@ fcvt.w.s reg1 reg2 {
 
 #  FCVT.S.W rd,rs1             Convert                 f(rd) ← (f32)(x(rs1))
 fcvt.s.w reg1 reg2 {
-      co=111111,
+      co=111101,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1112,7 +1120,7 @@ fcvt.s.w reg1 reg2 {
 
 #  FCLASS.S rd,rs1             Convert                 x(rd) ← classify(f(rs1))
 fclass.s reg1 reg2 {
-      co=111111,
+      co=111110,
       nwords=1,
       reg1=reg(25,21),
       reg2=reg(20,16),
@@ -1212,14 +1220,19 @@ pseudoinstructions
     }
 
     # li rd, expression        (several expansions)        Load immediate
-    li rd=reg, expression=inm
+    li rd=reg, expression=imm
+    { 
+        addi rd x0 expression
+    }
+
+    li rd=reg, expression=imm
     {
         lui  rd,     sel(31,12,expression)
         addu rd, rd, sel(11,0,expression)
     }
 
     # la rd, label        (several expansions)        Load address
-    la rd=reg, label=inm
+    la rd=reg, label=imm
     {
         lui  rd,     sel(31,12,label)
         addu rd, rd, sel(11,0,label)
@@ -1268,73 +1281,73 @@ pseudoinstructions
     }
 
     # beqz rs1, offset        beq rs, x0, offset        Branch if = zero
-    beqz rs=reg, offset=inm
+    beqz rs=reg, offset=imm
     {
         beq rs, zero, offset
     }
 
     # bnez rs1, offset        bne rs, x0, offset        Branch if ≠ zero
-    bnez rs=reg, offset=inm
+    bnez rs=reg, offset=imm
     {
         bne rs, zero, offset
     }
 
     # blez rs1, offset        bge x0, rs, offset        Branch if ≤ zero
-    blez rs=reg, offset=inm
+    blez rs=reg, offset=imm
     {
         bge zero, rs, offset
     }
 
     # bgez rs1, offset        bge rs, x0, offset        Branch if ≥ zero
-    bgez rs=reg, offset=inm
+    bgez rs=reg, offset=imm
     {
         bge rs, zero, offset
     }
 
     # bltz rs1, offset        blt rs, x0, offset        Branch if < zero
-    bltz rs=reg, offset=inm
+    bltz rs=reg, offset=imm
     {
         blt rs, zero, offset
     }
 
     # bgtz rs1, offset        blt x0, rs, offset        Branch if > zero
-    bgtz rs=reg, offset=inm
+    bgtz rs=reg, offset=imm
     {
         blt zero, rs, offset
     }
 
     # bgt rs, rt, offset        blt rt, rs, offset        Branch if >
-    bgt rs=reg, rt=reg, offset=inm
+    bgt rs=reg, rt=reg, offset=imm
     {
         blt rt, rs, offset
     }
 
     # ble rs, rt, offset        bge rt, rs, offset        Branch if ≤
-    ble rs=reg, rt=reg, offset=inm
+    ble rs=reg, rt=reg, offset=imm
     {
         bge rt, rs, offset
     }
 
     # bgtu rs, rt, offset        bltu rt, rs, offset        Branch if >, unsigned
-    bgtu rs=reg, rt=reg, offset=inm
+    bgtu rs=reg, rt=reg, offset=imm
     {
         bltu rt, rs, offset
     }
 
     # bleu rs, rt, offset        bltu rt, rs, offset        Branch if ≤, unsigned
-    bleu rs=reg, rt=reg, offset=inm
+    bleu rs=reg, rt=reg, offset=imm
     {
         bgeu rt, rs, offset
     }
 
     # j offset        jal x0, offset        Jump
-    j offset=inm
+    j offset=imm
     {
         jal zero, offset
     }
 
     # jal offset        jal x1, offset        Jump register
-    #jal offset=inm
+    #jal offset=imm
     #{
     #    jal ra, offset
     #}

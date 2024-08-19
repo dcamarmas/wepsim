@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -188,6 +188,33 @@
     hash_action["SHOW-ASSEMBLY"] = function(data, options)
     {
         console.log(data.assembly) ;
+        return true ;
+    } ;
+
+    hash_action["SHOW-BINARY"] = function(data, options)
+    {
+        // 1) initialize
+        var ret = wepsim_nodejs_init(data) ;
+	if (false === ret.ok) {
+            console.log(ret.msg);
+	    return false ;
+	}
+
+	// 2) prepare firmware-assembly
+        ret = wepsim_nodejs_prepareCode(data, options) ;
+	if (false === ret.ok) {
+            console.log(ret.msg);
+	    return false ;
+	}
+
+	// 3) transform into binary assembly
+        ret = wepsim_nodejs_get_asmbin(data, options) ;
+	if (false === ret.ok) {
+            console.log(ret.msg);
+	    return false ;
+	}
+
+        console.log(ret.simware.src_alt) ;
         return true ;
     } ;
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -38,7 +38,8 @@
 		'INVALID SEGMENT NAME':		'Espera .data / .text / ... segmento, mas encontrou: ',
 		'NO MAIN OR KMAIN':		'Tags \'principal\' ou \'kmain\' não são definidos no segmento de texto (s). É obrigatória a definir pelo menos uma dessas marcas, a fim de executar um programa',
 		'UNKNOWN 1':			'Ocorreu um erro desconhecido (1) para o tipo de campo: ',
-		'UNKNOWN 2':			'erro inesperado (2)',
+		'UNKNOWN 2':			'Erro inesperado (2)',
+	        'EMPTY OBJECT CODE':	        'Código objeto vazio',
 		'REMEMBER FORMAT USED':		'Este é o formato de instrução usado para ',
 		'REMEMBER I. FORMAT':		'Lembre-se que o formato de instrução tem sido definida como: ',
 		'SEVERAL CANDIDATES':		'Instrução e campos de combinar com mais de um microprograma. Por favor, verifique o microcódigo. Atualmente, o formato de instrução pode ser: ',

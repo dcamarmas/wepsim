@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos
+ *  Copyright 2015-2024 Saul Alonso Monsalve, Javier Prieto Cepeda, Felix Garcia Carballeira, Alejandro Calderon Mateos
  *
  *  This file is part of WepSIM.
  *
@@ -28,15 +28,15 @@ function simlang_compile ( text, datosCU )
      var ret = null ;
 
      var skin_arr = get_cfg('ws_skin_user').split(':') ;
-     if (skin_arr.includes('beta_ngc'))
+     if (skin_arr.includes('old_c'))
      {
-         // Testing in beta for the next-generation compiler...
-         ret = wsasm_src2mem(datosCU, text, {}) ;
+         // Old version with support for firmware 2 based on simlang_compile_v1
+         ret = simlang_compile_v2(text, datosCU) ;
      }
      else
      {
-         // Juan Banga version with support for firmware 2 based on simlang_compile_v1
-         ret = simlang_compile_v2(text, datosCU) ;
+         // New assembler with several upgrades...
+         ret = wsasm_src2mem(datosCU, text, {}) ;
      }
 
      return ret ;

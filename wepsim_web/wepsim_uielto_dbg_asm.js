@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -219,6 +219,7 @@
                 var a2s = {} ;
                 for (l in seg)
 		{
+                     if (".binary" == l) continue ;
                      laddr = "0x" + seg[l].begin.toString(16) ;
                      a2s[laddr] = l;
                 }
@@ -547,7 +548,7 @@
     	   var wsi = get_cfg('ws_idiom') ;
 
            // prepare data: ins_quoted + firmware_reference
-	   var ins_quoted     = main_memory_getsrc(mp, l) ;
+	   var ins_quoted     = main_memory_getsrcbin(mp, l) ;
 	       ins_quoted     = ins_quoted.replace(/"/g, '&quot;').replace(/'/g, '&apos;') ;
 	   var firm_reference = mp[l].firm_reference ;
 	   var nwords         = parseInt(mp[l].firm_reference.nwords) ;

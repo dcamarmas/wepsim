@@ -3,7 +3,7 @@
 
 
 #*
-#*  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+#*  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
 #*
 #*  This file is part of WepSIM.
 #*
@@ -121,47 +121,45 @@ cat sim_core/sim_cfg.js \
     sim_hw/sim_hw_values.js \
     sim_hw/sim_hw_behavior.js \
     sim_hw/sim_hw_eltos.js \
-    sim_hw/sim_hw_ep/sim_ep.js \
-    sim_hw/sim_hw_ep/sim_hw_board.js \
-    sim_hw/sim_hw_ep/sim_hw_cpu.js \
-    sim_hw/sim_hw_ep/sim_hw_mem.js \
-    sim_hw/sim_hw_ep/sim_hw_io.js \
-    sim_hw/sim_hw_ep/sim_hw_kbd.js \
-    sim_hw/sim_hw_ep/sim_hw_scr.js \
-    sim_hw/sim_hw_ep/sim_hw_l3d.js \
-    sim_hw/sim_hw_ep/sim_hw_ldm.js \
-    sim_hw/sim_hw_poc/sim_poc.js \
-    sim_hw/sim_hw_poc/sim_hw_board.js \
-    sim_hw/sim_hw_poc/sim_hw_cpu.js \
-    sim_hw/sim_hw_poc/sim_hw_mem.js \
-    sim_hw/sim_hw_poc/sim_hw_io.js \
-    sim_hw/sim_hw_poc/sim_hw_kbd.js \
-    sim_hw/sim_hw_poc/sim_hw_scr.js \
-    sim_hw/sim_hw_poc/sim_hw_l3d.js \
-    sim_hw/sim_hw_poc/sim_hw_ldm.js \
-    sim_hw/sim_hw_rv/sim_rv.js \
-    sim_hw/sim_hw_rv/sim_hw_board.js \
-    sim_hw/sim_hw_rv/sim_hw_cpu.js \
-    sim_hw/sim_hw_rv/sim_hw_mem.js \
+    \
+    sim_hw/hw_items/board_base.js \
+    sim_hw/hw_items/mem_ep.js \
+    sim_hw/hw_items/mem_rv.js \
+    sim_hw/hw_items/mem_poc.js \
+    sim_hw/hw_items/cpu_ep.js \
+    sim_hw/hw_items/cpu_poc.js \
+    sim_hw/hw_items/cpu_rv.js \
+    sim_hw/hw_items/cu_poc.js \
+    sim_hw/hw_items/io_clk_base.js \
+    sim_hw/hw_items/io_screen_base.js \
+    sim_hw/hw_items/io_keyboard_base.js \
+    sim_hw/hw_items/io_ldm_base.js \
+    sim_hw/hw_items/io_l3d_base.js \
+    \
+    sim_hw/hw_ep.js \
+    sim_hw/hw_poc.js \
+    sim_hw/hw_rv.js \
     \
     sim_sw/firmware/lexical.js \
     sim_sw/firmware/firm_mcode.js \
+    sim_sw/firmware/firm_metadata.js \
     sim_sw/firmware/firm_begin.js \
     sim_sw/firmware/firm_pseudoinstructions.js \
     sim_sw/firmware/firm_registers.js \
     sim_sw/firmware/firm_fields_v1.js \
     sim_sw/firmware/firm_fields_v2.js \
     sim_sw/firmware/firm_instruction.js \
-    sim_sw/firmware/creator2native.js \
     sim_sw/firmware.js \
     sim_sw/assembly/lexical.js \
     sim_sw/assembly/memory_segments.js \
     sim_sw/assembly/directives.js \
     sim_sw/assembly/datatypes.js \
-    sim_sw/assembly/asm_v1.js \
-    sim_sw/assembly/asm_v2.js \
-    sim_sw/assembly/asm_ng.js \
-    sim_sw/assembly/asm_v3.js \
+    sim_sw/assembly/compiler1_prepare_wepsim.js \
+    sim_sw/assembly/compiler2_asm_obj.js \
+    sim_sw/assembly/compiler3_obj2mem_wepsim.js \
+    sim_sw/assembly/compiler_options.js \
+    sim_sw/assembly/assembler.js \
+    sim_sw/assembly/asm_2023.js \
     sim_sw/assembly.js > ws_dist/sim_all.js
 terser -o ws_dist/min.sim_all.js ws_dist/sim_all.js
 rm -fr ws_dist/sim_all.js

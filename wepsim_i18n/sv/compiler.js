@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -39,6 +39,7 @@
 		'NO MAIN OR KMAIN':		'Tags \'viktigaste\' eller \'kmain\' definieras inte i textsegmentet (s). Det är obligatoriskt att definiera åtminstone en av dessa taggar för att köra ett program',
 		'UNKNOWN 1':			'Ett okänt fel inträffade (1) för fälttypen:',
 		'UNKNOWN 2':			'Oväntat fel (2)',
+	        'EMPTY OBJECT CODE':	        'Tom objektkod',
 		'REMEMBER FORMAT USED':		'Detta är instruktionsformatet som används för ',
 		'REMEMBER I. FORMAT':		'Kom ihåg att instruktionsformatet har definierats som:',
 		'SEVERAL CANDIDATES':		'Instruktion och fält matcha med mer än en mikro. Kontrollera mikrokoden. För närvarande kan instruktionen format vara',

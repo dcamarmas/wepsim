@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -39,6 +39,7 @@
 		'NO MAIN OR KMAIN':		'Tag \'principale\' o \'kmain\' non sono definiti nel segmento di testo (s). E \'obbligatorio definire almeno uno di questi tag al fine di eseguire un programma',
 		'UNKNOWN 1':			'Si è verificato un errore sconosciuto (1) per il tipo di campo: ',
 		'UNKNOWN 2':			'Errore imprevisto (2)',
+	        'EMPTY OBJECT CODE':	        'Codice oggetto vuoto',
 		'REMEMBER FORMAT USED':		'Questo è il formato delle istruzioni utilizzato per ',
 		'REMEMBER I. FORMAT':		'Ricordare che il formato di istruzioni è stato definito come: ',
 		'SEVERAL CANDIDATES':		'Istruzione e campi corrispondono con più di un microprogramma. Si prega di verificare il microcodice. Attualmente, il formato delle istruzioni può essere: ',

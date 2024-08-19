@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -39,6 +39,7 @@
 		'NO MAIN OR KMAIN':		'Tags \'main\' o \'kmain\' no están definidos en el segmento de texto (s). Es obligatorio para definir al menos una de esas etiquetas con el fin de ejecutar un programa',
 		'UNKNOWN 1':			'Se produjo un error desconocido (1)',
 		'UNKNOWN 2':			'Error inesperado (2)',
+	        'EMPTY OBJECT CODE':	        'Código objeto vacío',
 		'REMEMBER FORMAT USED':		'Este es el formato de instrucción usado para ',
 		'REMEMBER I. FORMAT':		'Recuerde que el formato de instrucción se ha definido como: ',
 		'SEVERAL CANDIDATES':		'Instrucción y campos coincide con más de una instrucción posible. Por favor, compruebe el microcódigo. En la actualidad, el formato de la instrucción puede ser: ',

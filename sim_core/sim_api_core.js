@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -739,6 +739,34 @@
             set_simware(SIMWAREaddon) ;
     	    update_memories(SIMWARE) ;
     	    simcore_reset() ;
+
+            return ret ;
+        }
+
+        function simcore_assembly_to_binasm ( textToCompile )
+        {
+    	    var ret = {} ;
+    	        ret.msg = "" ;
+    	        ret.ok  = true ;
+
+            // get SIMWARE.firmware
+            var SIMWARE = get_simware() ;
+    	    if (SIMWARE.firmware.length === 0)
+            {
+                ret.msg = 'Empty microcode, please load the microcode first.' ;
+                ret.ok  = false;
+                return ret;
+    	    }
+
+            // Get assembly as binary segment
+            var SIMWAREaddon = wsasm_src2binsrc(SIMWARE, textToCompile, {});
+    	    ret.simware = SIMWAREaddon ;
+            if (SIMWAREaddon.error != null)
+            {
+                ret.msg = SIMWAREaddon.error ;
+                ret.ok  = false;
+                return ret;
+            }
 
             return ret ;
         }

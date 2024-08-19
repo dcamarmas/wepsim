@@ -3,13 +3,18 @@
 # WepSIM (https://wepsim.github.io/wepsim/)
 #
 
-firmware_version=2,
+firmware {
+   version  = 2,
+   rel_mult = 2,
+   endian   = little
+}
+
 begin
 {
    fetch:   # IR <- MP[PC]
               (IMR),
             # Decode, PC <- PC + 4
-              (AluOp=1010, M3=01, M4, PCWrite, IRWrite),
+              (AluOp=1010, M3=10, M4, PCWrite, IRWrite),
             # Control Unit signal
               (CU=10)
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -191,17 +191,19 @@
 
         function is_mobile ( )
         {
-          // return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ;
-
              if (typeof navigator === "undefined") {
                  return false ;
 	     }
 
+             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ;
+
+/*
              if (typeof navigator.userAgentData == "undefined") {
                  return false ;
 	     }
 
              return navigator.userAgentData.mobile ;
+*/
         }
 
         function is_cordova ( )
@@ -214,8 +216,8 @@
         {
              var wscfg = {
                    /* version */
-                   "version":               { upgrade:false, type:"string",    value:"2.3.0" },
-                   "build":                 { upgrade:true,  type:"string",    value:"2.3.0.20230901A" },
+                   "version":               { upgrade:false, type:"string",    value:"2.3.2" },
+                   "build":                 { upgrade:true,  type:"string",    value:"2.3.2.20240710B" },
 
 	           /* simulation screen: SVG */
                    "color_data_active":     { upgrade:false, type:"string",    value:"#0066FF" },
@@ -257,12 +259,13 @@
                    "SHOWCODE_pins":         { upgrade:false, type:"boolean",   value:true },
                    "ws_mode":               { upgrade:false, type:"string",    value:'newbie' },
                    "ws_action":             { upgrade:false, type:"string",    value:'checkpoint' },
+                   "ws_examples_set":       { upgrade:true,  type:"string",    value:'Empty' },
                    "is_interactive":        { upgrade:false, type:"boolean",   value:true },
                    "is_quick_interactive":  { upgrade:false, type:"boolean",   value:false },
                    "ws_idiom":              { upgrade:false, type:"string",    value:'en' },
                    "use_voice":             { upgrade:false, type:"boolean",   value:false },
                    "ws_skin_ui":            { upgrade:false, type:"string",    value:'classic' },
-                   "ws_skin_user":          { upgrade:true,  type:"string",    value:'extra_mcode:extra_morecfg:extra_share' },
+                   "ws_skin_user":          { upgrade:true,  type:"string",    value:'extra_mcode:extra_morecfg:extra_share:beta_ngc' },
                    "ws_skin_dark_mode":     { upgrade:false, type:"boolean",   value:false },
 
 	           /* micro/assembly screen: editor */

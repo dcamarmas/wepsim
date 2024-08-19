@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -27,8 +27,9 @@
 	    'action': function( hash )
 		      {
                          var ws_mode = get_cfg('ws_mode');
-                         if (hash.mode !== ws_mode)
+                         if (hash.mode !== ws_mode) {
 			     wsweb_select_main(hash.mode) ;
+                         }
 
 			 return '<li>Mode set to <strong>' + hash.mode + '</strong>.</li> ' ;
 		      }

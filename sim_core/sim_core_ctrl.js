@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2023 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
+ *  Copyright 2015-2024 Felix Garcia Carballeira, Alejandro Calderon Mateos, Javier Prieto Cepeda, Saul Alonso Monsalve
  *
  *  This file is part of WepSIM.
  *
@@ -314,7 +314,7 @@
 
 	       var ma = SIMWARE['firmware'][i]["mc-start"] ;
 
-           if (SIMWARE.version == 2) {
+           if (SIMWARE.metadata.version == 2) {
                var oc = parseInt(SIMWARE['firmware'][i]["oc"], 2) ;
                 var eoc = 0 ;
                 if (typeof SIMWARE['firmware'][i]["eoc"] != "undefined") {
