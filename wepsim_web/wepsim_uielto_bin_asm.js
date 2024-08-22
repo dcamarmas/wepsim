@@ -70,8 +70,21 @@
 
 		    // get html code
 		    var o = mp2html(simware.mp, simware.labels_asm, simware.seg) ;
+
+                    o += '<span>Memory as binary section... </span>' +
+                         '<span class="btn btn-sm" type="button" data-bs-toggle="collapse" ' +
+                         '      data-bs-target="#mp2bin1" ' +
+                         '      arial-expanded="true" arial-controls="memory as binary segment">+/-</span>' +
+                         '<div id="mp2bin1" valign="top" colspan="2" align="center" class="m-2 p-2 collapse">' +
+                         '<pre align="left">' +
+		         mp2bin(simware.mp, simware.labels_asm, simware.seg) +
+                         '</pre>' +
+                         '</div>' ;
+
+		    // set html code
 		    $('#compile_bin2a').html(o) ;
 
+                    // update limits
 		    for (var skey in simware.seg) {
 		         $("#compile_begin_" + skey).html("0x" + simware.seg[skey].begin.toString(16));
 		         $("#compile_end_"   + skey).html("0x" + simware.seg[skey].end.toString(16));
@@ -97,7 +110,7 @@
 	          if (typeof slebal[wadd] != "undefined")
                   {
                        for (var i=0; i<slebal[wadd].length; i++) {
-		            clabel = clabel + "<span class='badge rounded-pill text-bg-secondary float-start'>" + slebal[wadd][i] + "</span>" ;
+		            clabel = clabel + "<span class='badge rounded-pill text-bg-secondary float-end'>" + slebal[wadd][i] + "</span>" ;
                        }
                   }
 	          else clabel = clabel + "&nbsp;" ;
@@ -108,7 +121,7 @@
 
 	function mp2html ( mp, labels, seg )
 	{
-                // auxiliar for search
+                // auxiliar for search label
                 var slebal = {} ;
                 for (var l in labels)
                 {
@@ -118,29 +131,23 @@
                      slebal[labels[l]].push(l);
                 }
 
+                // auxiliar for segments
                 var slimits = {} ;
 	        for (var skey1 in seg)
 	        {
                      slimits[skey1] = {
                                         'c_begin': parseInt(seg[skey1].begin),
                                         'c_end':   parseInt(seg[skey1].end),
+                                        'm_begin': parseInt(seg[skey1].begin),
                                         'm_end':   0,
+                                        'loaded':  seg[skey1].loaded,
 		                        'color':   seg[skey1].color
 				      } ;
-                }
-                var a = 0 ;
-	        for (var m in mp)
-	        {
-                     a = parseInt(m, 16) ;
-	             for (var skey2 in seg)
-	             {
-                          if ( (slimits[skey2].c_begin <= a) &&
- 			       (a < slimits[skey2].c_end) &&
- 			       (a > slimits[skey2].m_end) )
-	                  {
-                                slimits[skey2].m_end = a ;
-                          }
-                     }
+
+                     // try to use the limits loaded in main memory (if any) ...
+                     if (slimits[skey1].loaded)
+                          slimits[skey1].m_end = slimits[skey1].c_end ;
+                     else slimits[skey1].m_end = slimits[skey1].c_begin + WORD_BYTES ;
                 }
 
                 // output...
@@ -169,12 +176,24 @@
 			 "<th class='border border-0' align='right'>&nbsp;&nbsp;segment</th>" +
 			 "</tr>" ;
 
-	   	var color="white";
+	   	var color = "white" ;
+	   	var sname = "" ;
 	        for (var skey in seg)
 	        {
-                     c_begin =  slimits[skey].c_begin ;
+                     // tip: ".binary" is a segment section but not a memory segment,
+                     //      ".stack"  is a memory segment but not a segment section
+	   	     sname = seg[skey].name ;
+                     if (".binary" == skey)
+                     {
+                          if (false == slimits[skey].loaded)
+	   	               continue ;   // skip empty ".binary" segment section
+                          else sname = "" ; // skip ".binary" segment as memory segment name
+                     }
+
+                     c_begin =  slimits[skey].m_begin ;
                      c_end   =  slimits[skey].m_end ;
 		     color   =  slimits[skey].color ;
+
                      rows    =  0 ;
                      var x   =  "" ;
                      var p   =  "" ;
@@ -204,7 +223,7 @@
                              rows++;
 	             }
 
-		     p = "<tr class=\"font-monospace fs-6\">" +
+		     p = "<tr class=\"font-monospace fs-6 text-dark\">" +
                          "<td>&nbsp;</td>" +
 			 "<td style='border-style: solid; border-width:1px;' bgcolor=" + color + ">0x" + parseInt(seg[skey].begin).toString(16).toUpperCase() + "</td>" +
 			 "<td style='border-style: solid; border-width:1px;' bgcolor=" + color + ">&nbsp;</td>" ;
@@ -215,10 +234,10 @@
                          rows = 2 ;
 		     }
 
-                     o += rows + " align=right>" + seg[skey].name + "&nbsp;</td></tr>" + x ;
+                     o += rows + " class=\"text-dark\" bgcolor=\"" + color + "\" align=right>" + sname + "&nbsp;</td></tr>" + x ;
 
 	             if (seg[skey].name != ".stack") {
-		         o += "<tr class=\"font-monospace fs-6\">" +
+		         o += "<tr class=\"font-monospace fs-6 text-dark\">" +
                               "<td>&nbsp;</td>" +
                               "<td valign='middle' align='center' height='25px'>...</td>" +
                               "<td valign='middle' align='center' height='25px'>...</td>" +
@@ -232,4 +251,40 @@
 
 		return o;
 	}
+
+	function mp2bin ( mp, labels, seg )
+	{
+                // auxiliar for search
+                var slebal = {} ;
+                for (var l in labels)
+                {
+                     if (typeof slebal[labels[l]] == "undefined") {
+                         slebal[labels[l]] = [] ;
+                     }
+                     slebal[labels[l]].push(l);
+                }
+
+                // output...
+		var o = '\n.binary\n' ;
+	        for (var a in mp)
+	        {
+		     // show labels
+                     if (typeof slebal[a] != "undefined")
+                     {
+                         o += "  " ;
+		         for (let j=0; j<slebal[a].length; j++) {
+			      o += slebal[a][j] + ":\n" ;
+		         }
+                     }
+
+		     // show address and value
+                     o += "\t" ;
+		     o += "0x" +          parseInt(a, 16).toString(16).padStart(2*WORD_BYTES, '0') + "\t" ;
+		     o += "0x" + parseInt(mp[a].value, 2).toString(16).padStart(2*WORD_BYTES, '0') + "\n" ;
+                }
+
+		// return memory as binary segment
+		return o ;
+	}
+
 
