@@ -1,9 +1,18 @@
 
 # Changelog
 
+## 2.4.0 -> 2.4.1:
+* Main improvements:
+  * Improve default testing pack (./devel/test_wepsim.sh co)
+  * Improve command-line support for I/O devices
+  * Improve dark mode with "auto" support (system settings selection)
+  * More responsive dialog boxes
+  * Sound example updated
+
 ## 2.3.9 -> 2.4.0:
 * Main improvements:
-  * EP2 processor as beta (is up to 20% faster than EP)
+  * EP2 processor as beta
+  * Added support to flash assembly code to a Nexys A7-100T FPGA
 * Main external dependencies updated:
   * Bump fontawesome from 6.6.0  to 7.2.0
   * Bump codemirror  from 5.65.0 to 5.65.21
