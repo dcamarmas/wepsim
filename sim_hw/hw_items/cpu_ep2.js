@@ -176,7 +176,6 @@ function cpu_ep2_register ( sim_p )
 
         sim_p.internal_states.FIRMWARE     = ws_empty_firmware ;
         sim_p.internal_states.io_hash      = {} ;
-        sim_p.internal_states.fire_stack   = [] ;
 
         sim_p.internal_states.tri_state_names = [ "T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12" ] ;
         sim_p.internal_states.fire_visible    = { 'databus': false, 'internalbus': false } ;
@@ -785,8 +784,8 @@ function cpu_ep2_register ( sim_p )
 			              draw_name: [['svg_p:path3121']] };
 
 	 sim_p.signals["SE"]     = { name: "SE", visible: true, type: "L", value: 0, default_value:0, nbits: "1",
-			              behavior: ["MBITS SELEC_T3 0 REG_IR OFFSET SIZE 0 SE; GETIMM SELEC_T3 REG_IR OFFSET SIZE; FIRE T3; CP_FIELD EXCODE_SE REG_MICROINS/EXCODE; FIRE_IFSET T11 1; FIRE BW",
-			                         "MBITS SELEC_T3 0 REG_IR OFFSET SIZE 0 SE; GETIMM SELEC_T3 REG_IR OFFSET SIZE; FIRE T3; CP_FIELD EXCODE_SE REG_MICROINS/EXCODE; EXT_SIG EXCODE_SE 5; FIRE_IFSET T11 1; FIRE BW"],
+			              behavior: ["MBITS SELEC_T3 0 REG_IR OFFSET SIZE 0 SE; GETIMM SELEC_T3 REG_IR OFFSET SIZE; FIRE_IFSET T3 1; CP_FIELD EXCODE_SE REG_MICROINS/EXCODE; FIRE_IFSET T11 1; FIRE BW",
+			                         "MBITS SELEC_T3 0 REG_IR OFFSET SIZE 0 SE; GETIMM SELEC_T3 REG_IR OFFSET SIZE; FIRE_IFSET T3 1; CP_FIELD EXCODE_SE REG_MICROINS/EXCODE; EXT_SIG EXCODE_SE 5; FIRE_IFSET T11 1; FIRE BW"],
                                       depends_on: ["T3", "T11"],
 			              fire_name: ['svg_cu:text3147-5-6', 'svg_p:text3593', 'svg_p:text3431'],
 			              draw_data: [['svg_p:path3559-3']],
@@ -2514,37 +2513,11 @@ function cpu_ep2_register ( sim_p )
                                                 }
 				   };
 
-		sim_p.behaviors["FIRE"] = { nparameters: 2,
-                                            types: ["S"],
-                                            operation: function (s_expr)
-						       {
-							    var signal_name = s_expr[1] ;
-							    var signal_obj  = sim_p.signals[signal_name] ;
-
-							    // 0. get if signal_name is_firing ...
-							    var is_firing = false ;
-							    if (typeof sim_p.internal_states.fire_stack[signal_name] != "undefined") {
-							        is_firing = sim_p.internal_states.fire_stack[signal_name] ;
-							    }
-
-							    // 1. if is_firing -> return (avoid loops)
-							    if (is_firing) {
-								return ;
-							    }
-
-							    // 2. is_firing = true
-							    sim_p.internal_states.fire_stack[signal_name] = true ;
-
-							    // 3. update draw
-							    update_draw(signal_obj, signal_obj.value) ;
-
-							    // 4. for Level signals, propage it
-							    if ("L" ==  signal_obj.type) {
-								signal_apply_behaviour(s_expr[1]) ;
-							    }
-
-							    // 5. is_firing = false
-							    sim_p.internal_states.fire_stack[signal_name] = false ;
+		sim_p.behaviors["FIRE"] =  { nparameters: 2,
+                                             types: ["S"],
+                                             operation: function (s_expr)
+						        {
+                                                            signal_fire(s_expr[1]) ;
                                                         },
                                                 verbal: function (s_expr)
                                                         {
@@ -2557,7 +2530,7 @@ function cpu_ep2_register ( sim_p )
 					     operation: function (s_expr)
 							{
                                                             if (get_value(sim_p.signals[s_expr[1]]) == parseInt(s_expr[2])) {
-                                                                sim_p.behaviors["FIRE"].operation(s_expr) ;
+                                                                signal_fire(s_expr[1]) ;
                                                             }
                                                         },
                                                 verbal: function (s_expr)

@@ -31,7 +31,9 @@
     function simcore_native_set_signal ( elto, value )
     {
         set_value(simhw_sim_signal(elto), value) ;
-	compute_behavior("FIRE " + elto) ;
+
+	signal_fire(elto) ; //compute_behavior("FIRE " + elto) ;
+
 	return value ;
     }
 
@@ -104,7 +106,7 @@
 
     function simcore_native_deco ( )
     {
-        compute_behavior('DECO') ;
+        compute_behavior("DECO") ;
     }
 
     function simcore_native_go_maddr ( maddr )
