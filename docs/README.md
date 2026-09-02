@@ -1,11 +1,11 @@
 
 # WepSIM: Web Elemental Processor Simulator
 
-![Build Status](https://github.com/acaldero/wepsim/actions/workflows/node.js.yml/badge.svg)
+![Build Status](https://github.com/acaldero/wepsim/actions/workflows/ci-dist.yml/badge.svg)
 [![Maintainability](https://qlty.sh/gh/acaldero/projects/wepsim/maintainability.svg)](https://qlty.sh/gh/acaldero/projects/wepsim)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/579e744cedde4dc78f8084d9db7abd32)](https://app.codacy.com/gh/acaldero/wepsim/dashboard)
+[![DeepSource](https://app.deepsource.com/gh/acaldero/wepsim.svg/?label=resolved+issues&show_trend=false&token=Re_wpCMdTb3y7nP4XtfWeKIY)](https://app.deepsource.com/gh/acaldero/wepsim/)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Release](https://img.shields.io/badge/Stable-2.4.1-green.svg)](https://github.com/wepsim/wepsim/releases/tag/v2.4.1)
+[![Release](https://img.shields.io/badge/Stable-2.4.2-green.svg)](https://github.com/wepsim/wepsim/releases/tag/v2.4.2)
 
 <html>
 	<ul>
@@ -54,17 +54,16 @@
     * A nightly build version is also available at https://acaldero.github.io/wepsim
 
 + From Linux/Unix command line, please:
-  * Check you have installed Node v18.20+, and Bash 5.2+:
+  * Check you have installed Node v20+, git, jq, and Bash 5.2+:
     ```bash
-    sudo apt-get install nodejs npm bash -y
+    sudo apt-get install nodejs npm git jq bash -y
     ```
   * Get WepSIM by executing:
     ```bash
-    wget https://github.com/wepsim/wepsim/releases/download/v2.3.8/wepsim-2.3.8.zip
-    unzip wepsim-2.3.8.zip
-    cd wepsim-2.3.8
-    npm install terser jq jshint yargs clear inquirer@8.2.6 fuzzy \
-	            inquirer-command-prompt inquirer-autocomplete-prompt@1
+    wget https://github.com/wepsim/wepsim/releases/download/v2.5.0/wepsim-2.5.0.zip
+    unzip wepsim-2.5.0.zip
+    cd wepsim-2.5.0
+    npm install
     ``` 
   * Execute wepsim.sh with the help flag in order to show the available command switches:
     ```bash
@@ -493,8 +492,8 @@ For example, the following link loads the RISC-V assembly code for the factorial
 + If you want to use the WepSIM engine within your App, there is a WepSIM API in JavaScript available too.
   You will need to include the WepSIM engine in your proyect:
   ```javascript
-  <script src="min.sim_all.js"   ></script><noscript>Your browser does not support JavaScript!</noscript>
-  <script src="min.wepsim_web.js"></script><noscript>Your browser does not support JavaScript!</noscript>
+  <script src="min.sim_all.js"   ></script>
+  <script src="min.wepsim_web.js"></script>
   ```
 
 + And then, one simple example of using this WepSIM API is the following:

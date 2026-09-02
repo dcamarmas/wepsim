@@ -1,8 +1,10 @@
+
 /*!
  * bootstrap-tokenfield
  * https://github.com/sliptree/bootstrap-tokenfield
  * Copyright 2013-2014 Sliptree and other contributors; Licensed MIT
  */
+
 @-webkit-keyframes 'blink' {
   0% {
     border-color: #ededed;
@@ -48,6 +50,7 @@
   display: inline-block;
   border: 1px solid #d9d9d9;
   background-color: #ededed;
+    color: black;
   white-space: nowrap;
   margin: -1px 5px 5px 0;
   height: 22px;
@@ -207,3 +210,4 @@
   padding-left: 0px;
   padding-right: 4px;
 }
+

@@ -4,15 +4,17 @@
 #
 
 firmware {
-   version  = 2,
-   rel_mult = 2,
-   endian   = little,
-   immediates = '{ "sign_extend": false, "padding": 32, "ranges": [] },
-                 { "sign_extend":  true, "padding":  0, "ranges": [[31, 20]] },
-                 { "sign_extend":  true, "padding":  0, "ranges": [[31, 25], [11, 7]] },
-                 { "sign_extend":  true, "padding":  1, "ranges": [[31, 31], [7, 7], [30, 25], [11, 8]] },
-                 { "sign_extend":  true, "padding": 12, "ranges": [[31, 12]] },
-                 { "sign_extend":  true, "padding":  1, "ranges": [[31, 31], [19, 12], [20, 20], [30, 21]] }'
+   version    = 2,
+   rel_mult   = 2,
+   endian     = little,
+   immediates = {
+                   ranges()+padding(32)                             = default,
+                   ranges(31:20)+se(1)                              = i_type,
+                   ranges(31:25|11:7)+se(1)                         = s_type,
+                   ranges(31:31|7:7|30:25|11:8)+se(1)+padding(1)    = b_type,
+                   ranges(31:12)+se(1)+padding(12)                  = u_type,
+                   ranges(31:31|19:12|20:20|30:21)+se(1)+padding(1) = j_type
+                }
 }
 
 begin
@@ -638,7 +640,7 @@ slli rd rs1 inm {
       imm(5:0)=inm,
       help='rd = (rs1 << inm)',
       {
-            (SE=1, OFFSET=0, SIZE=110, T3=1, C5=1),
+            (SE=0, OFFSET=0, SIZE=110, T3=1, C5=1),
             (MR=0, SELA=10000, MA=0, MB=01, COP=00111, T6=1, SELC=10101, LC=1, SELP=11, M7, C7),
             (A0=1, B=1, C=0)
       }
@@ -653,7 +655,7 @@ srli rd rs1 inm {
       imm(5:0)=inm,
       help='rd = (rs1 >>> inm)',
       {
-            (SE=1, OFFSET=0, SIZE=110, T3=1, C5=1),
+            (SE=0, OFFSET=0, SIZE=110, T3=1, C5=1),
             (MR=0, SELA=10000, MA=0, MB=01, COP=00101, T6=1, SELC=10101, LC=1, SELP=11, M7, C7),
             (A0=1, B=1, C=0)
       }
@@ -667,7 +669,7 @@ srai rd rs1 inm {
       imm(15:0)=inm,
       help='rd = (rs1 >> inm)',
       {
-            (SE=1, OFFSET=0, SIZE=110, T3=1, C5=1),
+            (SE=0, OFFSET=0, SIZE=110, T3=1, C5=1),
             (MR=0, SELA=10000, MA=0, MB=01, COP=00110, T6=1, SELC=10101, LC=1, SELP=11, M7, C7),
             (A0=1, B=1, C=0)
       }
