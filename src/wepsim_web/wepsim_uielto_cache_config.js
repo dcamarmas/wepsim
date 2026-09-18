@@ -145,6 +145,11 @@
         export function wepsim_show_cm_level_cfg_splitunify ( memory_cfg, index )
         {
            var this_name_str = '' ;
+           var options = [
+		           { value: "unify",   description: "Unified"             },
+		           { value: "split_i", description: "Split (instruction)" },
+		           { value: "split_d", description: "Split (data)"        }
+	                 ] ;
 
 	   var o = "  <div class='row mb-3'>" +
                    "    <label for='su_pol_" + index + "_" + this_name_str + "' " +
@@ -154,11 +159,18 @@
 		   "    <select class='form-select form-control' " +
 		   "            id='su_pol_" + index + "_" + this_name_str + "' " +
 		   "            onchange='ws.wepsim_cm_update_cfg(" + index + ", \"su_pol\", this.value);'" +
-		   "            aria-label='Replace policy'>" +
-		   "      <option value='unify' selected>Unified</option>" +
-		   "      <option value='split_i'>Split (instruction)</option>" +
-		   "      <option value='split_d'>Split (data)</option>" +
-		   "    </select>" +
+		   "            aria-label='Replace policy'>" ;
+
+           var cfg_splitunify = get_var(memory_cfg[index].cfg.su_pol) ;
+           for (var i=0; i<options.length; i++)
+           {
+              if (options[i].value != cfg_splitunify)
+	           o += "      <option value='" + options[i].value + "'         >" + options[i].description + "</option>" ;
+              else o += "      <option value='" + options[i].value + "' selected>" + options[i].description + "</option>" ;
+
+           }
+
+	      o += "    </select>" +
                    "    </div>" +
                    "  </div>" ;
 
@@ -168,6 +180,10 @@
         export function wepsim_show_cm_level_cfg_replacepol ( memory_cfg, index )
         {
            var this_name_str = '' ;
+           var options = [
+		           { value: "lfu",   description: "LFU"  },
+		           { value: "fifo",  description: "FIFO" }
+	                 ] ;
 
 	   var o = "  <div class='row mb-3'>" +
                    "    <label for='replace_pol_" + index + "_" + this_name_str + "' " +
@@ -177,10 +193,18 @@
 		   "    <select class='form-select' " +
 		   "            id='replace_pol_" + index + "_" + this_name_str + "' " +
 		   "            onchange='ws.wepsim_cm_update_cfg(" + index + ", \"replace_pol\", this.value);'" +
-		   "            aria-label='Replace policy'>" +
-		   "      <option value='lfu' selected>LFU</option>" +
-		   "      <option value='fifo'>FIFO</option>" +
-		   "    </select>" +
+		   "            aria-label='Replace policy'>" ;
+
+           var cfg_replacepol = get_var(memory_cfg[index].cfg.replace_pol) ;
+           for (var i=0; i<options.length; i++)
+           {
+              if (options[i].value != cfg_replacepol)
+	           o += "      <option value='" + options[i].value + "'         >" + options[i].description + "</option>" ;
+              else o += "      <option value='" + options[i].value + "' selected>" + options[i].description + "</option>" ;
+
+           }
+
+	      o += "    </select>" +
                    "    </div>" +
                    "  </div>" ;
 
@@ -198,7 +222,7 @@
                    "    <div class='col-xs-12 col-md-8'>" +
 		   "    <select class='form-select' " +
 		   "            id='replace_cpp_" + index + "_" + this_name_str + "' " +
-		   "            onchange='wepsim_cm_update_placement(" + index + ", this.value);'" +
+		   "            onchange='ws.wepsim_cm_update_placement(" + index + ", this.value);'" +
 		   "            aria-label='Cache placement policy'>" +
 		   "      <option value='fa' selected>Fully associative</option>" +
 		   "      <option value='sa'         >Set-associative</option>" +
@@ -264,7 +288,7 @@
                    "  <div class='col-xs-12 col-md-8'>" +
 		   "  <select class='form-select form-control' " +
 		   "          id='su_next_" + index + "_" + this_name_str + "' " +
-		   "          onchange='ws.wepsim_cm_update_cfg(" + index + ", \"next_cache\", this.value);wepsim_show_cache_memory_config();'" +
+		   "          onchange='ws.wepsim_cm_update_cfg(" + index + ", \"next_cache\", this.value); ws.wepsim_show_cache_memory_config();'" +
 		   "          aria-label='Next Cache'>" ;
 
               o += "<option value='-1'>None</option>" ;
@@ -274,12 +298,12 @@
 		   if (i == index) { continue ; }
 		   // skip lower levels pointing to other
 		   if (
-			 (memory_cfg[i].cfg.level < memory_cfg[index].cfg.level)
+			 (get_var(memory_cfg[i].cfg.level) < get_var(memory_cfg[index].cfg.level))
 			   &&
-			 (memory_cfg[i].cfg.next_cache != -1)
+			 (get_var(memory_cfg[i].cfg.next_cache) != -1)
 		   ) { continue ; }
 
-                   if (i != memory_cfg[index].cfg.next_cache)
+                   if (i != get_var(memory_cfg[index].cfg.next_cache))
                         o += "<option value='"+i+"'         >"+(i+1)+"</option>" ;
                    else o += "<option value='"+i+"' selected>"+(i+1)+"</option>" ;
               }
@@ -436,7 +460,7 @@
               }
 
               if ('next_cache' == field) {
-		   actual_next = curr_cfg[index].cfg.next_cache ;
+		   actual_next = get_var(curr_cfg[index].cfg.next_cache) ;
 		   value = parseInt(value) ;
               }
 
@@ -448,10 +472,10 @@
               if ('next_cache' == field)
 	      {
 		   if (actual_next != -1) {
-		       curr_cfg[actual_next].cfg.level = 1 ; // TODO: if (...link_counter == 0)
+		       set_var(curr_cfg[actual_next].cfg.level, 1) ; // TODO: if (...link_counter == 0)
 		   }
 		   if (value != -1) {
-		       curr_cfg[value].cfg.level = curr_cfg[index].cfg.level + 1 ;
+		       set_var(curr_cfg[value].cfg.level, get_var(curr_cfg[index].cfg.level) + 1) ;
 		   }
               }
 
@@ -486,7 +510,7 @@
               {
                   var curr_cfg = simhw_internalState('CM_cfg') ;
                   var curr_sz  = 0 ;
-                  if ( (typeof curr_cfg        != "undefined") &&
+                  if ( (typeof curr_cfg != "undefined") &&
                        (typeof curr_cfg[index] != "undefined") )
                   {
                       curr_sz  = parseInt(get_var(curr_cfg[index].cfg.via_size)) ;
